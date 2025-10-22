@@ -3,64 +3,83 @@ import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-ro
 import Register from './components/Register';
 import Login from './components/Login';
 import UserDetails from './components/UserDetails';
-import GoogleAuth from './components/GoogleAuth';
+import Sidebar from './components/Sidebar';
 import './App.css';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || null);
   const [userId, setUserId] = useState(localStorage.getItem('userId') || null);
+  const [username, setUsername] = useState(localStorage.getItem('username') || '');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // ✅ State
 
   const handleLogin = (data) => {
     setToken(data.token);
     setUserId(data.user._id);
+    setUsername(data.user.username || data.user.email.split('@')[0]);
     localStorage.setItem('token', data.token);
     localStorage.setItem('userId', data.user._id);
+    localStorage.setItem('username', data.user.username || data.user.email.split('@')[0]);
   };
 
   const handleLogout = () => {
     setToken(null);
     setUserId(null);
+    setUsername('');
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
+    localStorage.removeItem('username');
   };
 
-  // Protected Route Component
   const ProtectedRoute = ({ children }) => {
     return token ? children : <Navigate to="/login" />;
   };
 
+  // NON-AUTHENTICATED PAGES (Login/Register)
+  if (!token) {
+    return (
+      <Router>
+        <div className="container" style={{ backgroundColor: 'var(--bg-dark)', minHeight: '100vh' }}>
+          <Routes>
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/" element={<Navigate to="/login" />} />
+          </Routes>
+        </div>
+      </Router>
+    );
+  }
+
+  // AUTHENTICATED PAGES (With Sidebar)
   return (
     <Router>
-      <div className="container">
-        <nav style={{ textAlign: 'center', marginBottom: '20px', padding: '10px', background: '#f5f5f5' }}>
-          {!token ? (
-            <>
-              <Link to="/register" style={{ margin: '0 10px' }}>Register</Link> | 
-              <Link to="/login" style={{ margin: '0 10px' }}>Login</Link>
-            </>
-          ) : (
-            <>
-              <Link to={`/user/${userId}`} style={{ margin: '0 10px' }}>Dashboard</Link> | 
-              <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#f44336', cursor: 'pointer', margin: '0 10px' }}>
-                Logout
-              </button>
-            </>
-          )}
-        </nav>
-        <Routes>
-          <Route path="/auth/callback" element={<GoogleAuth onLogin={handleLogin} />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login onLogin={handleLogin} />} />
-          <Route 
-            path="/user/:id" 
-            element={
-              <ProtectedRoute>
-                <UserDetails token={token} />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="/" element={<Navigate to={token ? `/user/${userId}` : "/login"} />} />
-        </Routes>
+      <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-dark)' }}>
+        {/* ✅ FIXED: Pass setIsSidebarCollapsed prop */}
+        <Sidebar 
+          userId={userId} 
+          username={username}
+          onLogout={handleLogout}
+          isCollapsed={isSidebarCollapsed}
+          setIsCollapsed={setIsSidebarCollapsed}  // ← THIS WAS MISSING!
+        />
+        
+        <div style={{ 
+          flex: 1, 
+          marginLeft: isSidebarCollapsed ? '60px' : '250px',
+          padding: '20px',
+          transition: 'margin-left 0.3s ease'
+        }}>
+          <Routes>
+            <Route 
+              path="/user/:id" 
+              element={
+                <ProtectedRoute>
+                  <UserDetails token={token} />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/" element={<Navigate to={`/user/${userId}`} />} />
+          </Routes>
+        </div>
       </div>
     </Router>
   );

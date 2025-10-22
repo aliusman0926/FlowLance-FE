@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import GoogleAuth from '../components/GoogleAuth';
 
 function Register() {
   const [username, setUsername] = useState('');
@@ -65,7 +66,7 @@ function Register() {
           disabled={loading}
           style={{ 
             padding: '10px', 
-            background: '#2196f3', 
+            background: 'var(--accent-green)', 
             color: 'white', 
             border: 'none',
             cursor: loading ? 'not-allowed' : 'pointer'

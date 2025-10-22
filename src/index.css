@@ -1,60 +1,78 @@
+/* index.css */
+:root {
+  --bg-dark: #1e1e1e;       /* Dark grey background */
+  --bg-darker: #121212;     /* Even darker for cards/sidebars */
+  --accent-green: #4caf50;  /* Main green */
+  --accent-green-dark: #2e7d32; /* Darker green for hover */
+  --text-primary: #ffffff;  /* White text */
+  --text-secondary: #b0b0b0; /* Light grey text */
+  --border-color: #333333;  /* Subtle borders */
+  --error-red: #f44336;     /* Keep for errors */
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  background-color: #d4f4e2; /* Pastel green background */
-  color: #333;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
 }
 
 .container {
-  max-width: 600px;
-  margin: 50px auto;
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 20px;
-  background-color: #ffffff; /* White card */
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-h2 {
-  text-align: center;
-  color: #4caf50; /* Pastel green accent */
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-}
-
-input {
-  margin: 10px 0;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
+/* Buttons */
 button {
-  padding: 10px;
-  background-color: #4caf50; /* Pastel green button */
-  color: #ffffff;
+  background-color: var(--accent-green);
+  color: var(--text-primary);
   border: none;
-  border-radius: 4px;
+  padding: 10px 20px;
+  border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 button:hover {
-  background-color: #45a049;
+  background-color: var(--accent-green-dark);
 }
 
-p {
-  text-align: center;
-  margin-top: 10px;
+/* Inputs */
+input {
+  background-color: var(--bg-darker);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 10px;
+  border-radius: 5px;
+  width: 100%;
 }
 
+input:focus {
+  outline: none;
+  border-color: var(--accent-green);
+}
+
+/* Links */
 a {
-  color: #4caf50;
+  color: var(--accent-green);
   text-decoration: none;
 }
 
+a:hover {
+  text-decoration: underline;
+}
+
+/* Errors */
 .error {
-  color: red;
-  text-align: center;
+  color: var(--error-red);
 }

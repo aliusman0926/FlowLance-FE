@@ -27,16 +27,16 @@ function GoogleAuth({ onLogin }) {
       textAlign: 'center', 
       marginTop: '20px',
       padding: '20px',
-      border: '2px solid #4285f4',
+      border: '2px solid var(--bg-darker)',
       borderRadius: '10px',
-      background: '#f8f9fa'
+      background: 'var(--bg)'
     }}>
       <h3>🌐 Sign in with Google</h3>
       <button 
         onClick={handleGoogleLogin}
         style={{
           padding: '12px 24px',
-          background: '#4285f4',
+          background: 'var(--accent-green-dark)',
           color: 'white',
           border: 'none',
           borderRadius: '5px',

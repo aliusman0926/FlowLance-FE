@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import GoogleAuth from './GoogleAuth';
+import GoogleAuth from '../components/GoogleAuth';
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -43,8 +43,6 @@ function Login({ onLogin }) {
       
       <div style={{ textAlign: 'center', margin: '20px 0', color: '#666' }}>
         <hr style={{ border: 'none', borderTop: '1px solid #ddd', margin: '10px 0' }} />
-        <span style={{ background: 'white', padding: '0 10px' }}>OR</span>
-        <hr style={{ border: 'none', borderTop: '1px solid #ddd', margin: '10px 0' }} />
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -81,7 +79,7 @@ function Login({ onLogin }) {
       </form>
       {error && <p style={{ color: 'red', textAlign: 'center', marginTop: '10px' }}>{error}</p>}
       <p style={{ textAlign: 'center', marginTop: '10px' }}>
-        No account? <Link to="/register" style={{ color: '#2196f3' }}>Register</Link>
+        No account? <Link to="/register" style={{ color: 'var(--accent-green' }}>Register</Link>
       </p>
     </div>
   );

@@ -74,11 +74,11 @@ function UserDetails({ token }) {
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px' }}>
-      <h1 style={{ textAlign: 'center', color: '#333' }}>💰 Transaction Dashboard</h1>
+      <h1 style={{ textAlign: 'center', color: 'var(--text-primary' }}>💰 Transaction Dashboard</h1>
       
       {/* BALANCE CARD */}
       <div style={{ 
-        background: '#e8f5e8', 
+        background: 'var(--bg-darker)', 
         padding: '20px', 
         borderRadius: '10px', 
         marginBottom: '30px',
@@ -93,7 +93,7 @@ function UserDetails({ token }) {
 
       {/* USER PROFILE */}
       <div style={{ 
-        background: '#f5f5f5', 
+        background: 'var(--bg-darker)', 
         padding: '20px', 
         borderRadius: '10px', 
         marginBottom: '30px' 
@@ -135,7 +135,7 @@ function UserDetails({ token }) {
 
       {/* TRANSACTIONS TABLE */}
       <div style={{ 
-        background: 'white', 
+        background: 'var(--bg-darker)', 
         padding: '20px', 
         borderRadius: '10px', 
         boxShadow: '0 2px 5px rgba(0,0,0,0.1)' 
@@ -147,7 +147,7 @@ function UserDetails({ token }) {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ background: '#f5f5f5' }}>
+                <tr style={{ background: 'var(--bg-dark)' }}>
                   <th style={{ padding: '10px', textAlign: 'left' }}>Date</th>
                   <th style={{ padding: '10px', textAlign: 'left' }}>Type</th>
                   <th style={{ padding: '10px', textAlign: 'right' }}>Amount</th>
