@@ -1,0 +1,313 @@
+/* File: src/components/TransactionTable.css */
+
+.table-container {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto; /* Allow table to scroll if it's too tall */
+  overflow-x: auto; /* Allow table to scroll horizontally on small screens */
+}
+
+.transaction-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.75rem; /* Spacing between rows */
+  color: var(--text-secondary);
+}
+
+.transaction-table th {
+  text-align: left;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 1rem 0.5rem 1rem; /* Add padding */
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 500;
+}
+
+.transaction-table td {
+  background-color: #1f1f1f; /* Slightly lighter than card color */
+  padding: 1.25rem 1rem;
+  vertical-align: middle;
+}
+
+/* Row-specific styles */
+.transaction-table tr {
+  transition: background-color 0.2s ease-out;
+}
+
+.transaction-table tr:hover td {
+  background-color: #2a2a2a; /* Even lighter on hover */
+}
+
+/* Rounded corners for rows */
+.transaction-table td:first-child {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+.transaction-table td:last-child {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+/* Alignment */
+.th-amount, .td-amount {
+  text-align: right;
+}
+.th-actions, .td-actions {
+  text-align: center;
+}
+
+/* Description */
+.td-description {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Type Badge */
+.txn-type-badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.txn-type-badge.credit {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+.txn-type-badge.debit {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #F44336;
+}
+
+/* Currency Colors */
+.txn-credit {
+  color: #4CAF50;
+}
+.txn-debit {
+  color: #F44336;
+}
+.td-total {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Action Buttons */
+.td-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.table-icon-button {
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.table-icon-button svg {
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.table-icon-button.edit-btn:hover {
+  background-color: rgba(74, 144, 226, 0.1);
+}
+.table-icon-button.edit-btn:hover svg {
+  color: var(--accent-color);
+}
+
+.table-icon-button.delete-btn:hover {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+.table-icon-button.delete-btn:hover svg {
+  color: #F44336;
+}
+
+/* Empty State */
+.table-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: 2rem;
+  text-align: center;
+}
+
+.dashboard-loading, .dashboard-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  gap: 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.dashboard-error {
+  color: #e57373; /* A soft red */
+  background-color: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  max-width: 600px;
+  margin: 2rem auto;
+}
+
+.bento-grid-container {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(180px, auto);
+  gap: 1.5rem;
+}
+
+.bento-box {
+  background-color: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.bento-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.bento-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- Grid Layout --- */
+
+.balance-box {
+  grid-column: span 2;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.balance-amount {
+  font-size: 3.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.add-txn-box {
+  grid-column: span 1;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.add-txn-button {
+  background-color: var(--accent-color);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-txn-button:hover {
+  background-color: #3a80d2; /* Darker accent */
+  transform: scale(1.05);
+}
+
+.graph-box {
+  grid-column: span 1;
+}
+
+.table-box {
+  grid-column: span 4;
+  grid-row: span 2; /* Make it taller */
+  min-height: 400px;
+  /* Remove padding to let table fill the box */
+  padding: 0.5rem 1.5rem 1.5rem 1.5rem; 
+  /* We removed the .placeholder-content styles */
+  display: flex;
+  flex-direction: column;
+}
+
+/* This title now needs a bottom margin */
+.table-box .bento-title {
+  padding: 1rem 0;
+  margin-bottom: 0;
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+  .transaction-table {
+    border-spacing: 0 0;
+  }
+  .transaction-table thead {
+    display: none;
+  }
+  .transaction-table tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+  }
+  .transaction-table td {
+    display: block;
+    text-align: right !important;
+    padding: 0.75rem 1rem;
+    background: none;
+  }
+  .transaction-table td:first-child {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 0;
+  }
+  .transaction-table td:last-child {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-top-right-radius: 0;
+  }
+  .transaction-table td::before {
+    content: attr(data-label);
+    float: left;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  .td-actions {
+    justify-content: flex-end; /* Align buttons to the right */
+  }
+  .td-description {
+    white-space: normal;
+  }
+}

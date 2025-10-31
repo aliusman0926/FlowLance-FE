@@ -1,0 +1,148 @@
+/* File: src/pages/TransactionDashboard.css */
+
+.dashboard-loading, .dashboard-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  margin: 2rem auto;
+  gap: 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.dashboard-error {
+  color: #e57373; /* A soft red */
+  background-color: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  max-width: 600px;
+}
+
+.bento-grid-container {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 column grid */
+  grid-auto-rows: minmax(180px, auto);
+  gap: 1.5rem;
+}
+
+.bento-box {
+  background-color: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease-in-out;
+}
+
+.bento-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+/* --- Balance Box (1/4 width) --- */
+.balance-box {
+  grid-column: span 1;
+  justify-content: center; /* Center content vertically */
+}
+
+.balance-amount {
+  font-size: clamp(2rem, 5vw, 2.75rem); /* Responsive font size */
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 0.5rem;
+  line-height: 1.2;
+}
+
+/* --- Log Transaction Button --- */
+.log-txn-btn {
+  background-color: var(--accent-color);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 1.5rem; /* More space from balance */
+  text-align: center;
+}
+
+.log-txn-btn:hover {
+  background-color: #3a80d2; /* Darker accent */
+}
+
+/* --- Graph Box (3/4 width) --- */
+.graph-box {
+  grid-column: span 3;
+  padding: 16px; /* Use smaller padding to give chart room */
+}
+
+.graph-box .bento-title {
+  margin-bottom: 16px; /* Add some space below the title */
+  padding: 0 0.5rem; /* Align with padding */
+}
+
+/* --- Table Box (Full width) --- */
+.table-box {
+  grid-column: span 4;
+  grid-row: span 2; /* Make it taller */
+  padding: 0; /* Let the table handle its own padding */
+  overflow: hidden; /* For table border radius */
+}
+
+.table-box .bento-title {
+  padding: 1.5rem 1.5rem 0 1.5rem; /* Add padding back to title */
+  margin-bottom: 1rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 1024px) {
+  .bento-grid {
+    /* Stack balance and graph */
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .balance-box {
+    grid-column: span 1;
+  }
+  .graph-box {
+    grid-column: span 1;
+  }
+  .table-box {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .bento-grid-container {
+    padding: 1rem;
+  }
+  .bento-grid {
+    /* Full stack on mobile */
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .balance-box,
+  .graph-box,
+  .table-box {
+    grid-column: span 1;
+  }
+  .table-box {
+    grid-row: auto; /* Reset row span */
+  }
+  .balance-amount {
+    font-size: 2.25rem;
+  }
+}
+

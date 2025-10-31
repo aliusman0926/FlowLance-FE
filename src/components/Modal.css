@@ -1,0 +1,75 @@
+/* File: src/components/Modal.css */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+  /* Animation for fade-in */
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background-color: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  /* Animation for pop-in */
+  animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.9); opacity: 0.5; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}

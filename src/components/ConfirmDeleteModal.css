@@ -1,0 +1,54 @@
+.confirm-delete-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 16px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.confirm-message {
+  font-size: 1.125rem;
+  color: var(--text-light);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.confirm-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  background-color: var(--bg-lighter);
+  color: var(--text-light);
+}
+
+.cancel-btn:hover:not(:disabled) {
+  background-color: var(--bg-darker);
+}
+
+.delete-btn {
+  background-color: #ef4444; /* Red */
+  color: white;
+}
+
+.delete-btn:hover:not(:disabled) {
+  background-color: #dc2626; /* Darker Red */
+}

@@ -1,9 +1,14 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import GoogleAuth from '../components/GoogleAuth';
+import GoogleAuth from './GoogleAuth'; // This path is correct
+import './Auth.css'; // This path is correct
 
-function Register() {
+// Set the base URL for your API
+const API_BASE_URL = 'http://localhost:3000/api';
+
+// *** FIX 1: Added onLogin prop ***
+function Register({ onLogin }) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,69 +21,94 @@ function Register() {
     setLoading(true);
     setError('');
     
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      setLoading(false);
+      return;
+    }
+    
     try {
-      await axios.post('http://localhost:3000/api/users/register', { 
+      await axios.post(`${API_BASE_URL}/users/register`, { 
         username, 
         email, 
         password 
       });
-      alert('Registration successful! Redirecting to login...');
-      navigate('/login');
+      
+      // Redirect to login with a success message
+      navigate('/login?registration=success');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
-      <GoogleAuth onLogin={() => navigate('/user/' + userId)} />
-      <h2 style={{ textAlign: 'center' }}>Register</h2>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <input 
-          type="text" 
-          placeholder="Username" 
-          value={username} 
-          onChange={(e) => setUsername(e.target.value)} 
-          required 
-          style={{ padding: '10px', border: '1px solid #ddd' }}
-        />
-        <input 
-          type="email" 
-          placeholder="Email" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-          required 
-          style={{ padding: '10px', border: '1px solid #ddd' }}
-        />
-        <input 
-          type="password" 
-          placeholder="Password" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          required 
-          minLength={6}
-          style={{ padding: '10px', border: '1px solid #ddd' }}
-        />
-        <button 
-          type="submit" 
-          disabled={loading}
-          style={{ 
-            padding: '10px', 
-            background: 'var(--accent-green)', 
-            color: 'white', 
-            border: 'none',
-            cursor: loading ? 'not-allowed' : 'pointer'
-          }}
-        >
-          {loading ? 'Registering...' : 'Register'}
-        </button>
-      </form>
-      {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
-      <p style={{ textAlign: 'center', marginTop: '10px' }}>
-        Already have an account? <Link to="/login">Login</Link>
-      </p>
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2 className="auth-title">Create Account</h2>
+        <p className="auth-subtitle">Get started with a free account</p>
+
+        {error && <div className="auth-error">{error}</div>}
+        
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="auth-input-group">
+            <label htmlFor="username">Username</label>
+            <input 
+              id="username"
+              type="text" 
+              placeholder="yourusername" 
+              value={username} 
+              onChange={(e) => setUsername(e.target.value)} 
+              required 
+              className="auth-input"
+            />
+          </div>
+          <div className="auth-input-group">
+            <label htmlFor="email">Email</label>
+            <input 
+              id="email"
+              type="email" 
+              placeholder="you@example.com" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+              className="auth-input"
+            />
+          </div>
+          <div className="auth-input-group">
+            <label htmlFor="password">Password</label>
+            <input 
+              id="password"
+              type="password" 
+              placeholder="••••••••" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+              minLength={6}
+              className="auth-input"
+            />
+          </div>
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="auth-button"
+          >
+            {loading ? <span className="auth-spinner"></span> : 'Create Account'}
+          </button>
+        </form>
+        
+        <div className="auth-divider">
+          <span>OR</span>
+        </div>
+        
+        {/* *** FIX 2: Pass onLogin prop to GoogleAuth *** */}
+        <GoogleAuth onLogin={onLogin} />
+        
+        <p className="auth-toggle">
+          Already have an account? <Link to="/login">Sign In</Link>
+        </p>
+      </div>
     </div>
   );
 }

@@ -1,87 +1,280 @@
-import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
-import Register from './components/Register';
+import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation, Outlet } from 'react-router-dom'; // Import Outlet
+import axios from 'axios';
+
+// Import Auth Components
 import Login from './components/Login';
-import UserDetails from './components/UserDetails';
-import Sidebar from './components/Sidebar';
-import './App.css';
+import Register from './components/Register';
+import GoogleAuth from './components/GoogleAuth';
+import CardNav from './components/CardNav';
+import logo from './assets/logo.svg';
+import TransactionDashboard from './components/TransactionDashboard';
+
+// Import Global CSS
+import './Global.css';
+
+// --- Placeholder Dashboard ---
+// This is now *just* the page content. The nav is handled by ProtectedLayout.
+function Dashboard({ user }) {
+  return (
+    // <nav> has been removed from here
+    <main className="dashboard-main">
+      <h2>Welcome, {user.username || 'User'}!</h2>
+      <p>Summarized dashboard will appear here.</p>
+      <pre>
+        {JSON.stringify(user, null, 2)}
+      </pre>
+    </main>
+  );
+}
+// --- End Placeholder ---
+
+// ... AuthCallback component (no changes) ...
+function AuthCallback({ onLogin }) {
+  // *** FIX 2: Callback logic moved here from GoogleAuth.jsx ***
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // This effect runs *only* when this component mounts on /auth/callback
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get('token');
+    const userId = urlParams.get('userId');
+
+    if (token && userId) {
+      // The onLogin function (handleLogin) will fetch the full user
+      onLogin(token, { _id: userId });
+      // We can now navigate away. handleLogin will complete in the background.
+      navigate('/dashboard');
+    } else {
+      // Handle a failed auth redirect
+      setError('Google authentication failed. Please try again.');
+      setTimeout(() => navigate('/login'), 3000);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only ONCE when the component mounts
+
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
+        {error ? (
+          <>
+            <h2 className="auth-title">Authentication Error</h2>
+            <p className="auth-subtitle">{error}</p>
+          </>
+        ) : (
+          <>
+            <h2 className="auth-title">Please wait...</h2>
+            <p className="auth-subtitle">Finalizing your secure sign-in.</p>
+            {/* We can show a spinner here instead of the GoogleAuth button */}
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+              <span className="auth-spinner"></span>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// --- NEW PROTECTED LAYOUT ---
+// This component wraps all protected pages
+// and adds the CardNav header.
+
+const items = [
+    {
+      label: "Financials",
+      bgColor: "#0a7140",
+      textColor: "#eefff6",
+      links: [
+        { label: "Transactions", href: '/transactions' },
+        { label: "Tax Report", ariaLabel: "Tax Report" }
+      ]
+    },
+    {
+      label: "Projects", 
+      bgColor: "#0a7140",
+      textColor: "#eefff6",
+      links: [
+        { label: "Featured", ariaLabel: "Featured Projects" },
+        { label: "Case Studies", ariaLabel: "Project Case Studies" }
+      ]
+    },
+    {
+      label: "Contact",
+      bgColor: "#0a7140", 
+      textColor: "#eefff6",
+      links: [
+        { label: "Email", ariaLabel: "Email us" },
+        { label: "Twitter", ariaLabel: "Twitter" },
+        { label: "LinkedIn", ariaLabel: "LinkedIn" }
+      ]
+    }
+  ];
+
+function ProtectedLayout({ user, onLogout }) {
+  return (
+    <div className="app-container">
+      <CardNav
+        logo={logo}
+        logoAlt="Company Logo"
+        items={items}
+        baseColor="#121212"
+        menuColor="#eefff6"
+        buttonBgColor="#00341d"
+        buttonTextColor="#eefff6"
+        ease="power3.out"
+        onLogout={onLogout}
+      />
+      <main className="app-content">
+        {/* Child routes (like Dashboard) will render here */}
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+// --- END PROTECTED LAYOUT ---
+
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
-  const [userId, setUserId] = useState(localStorage.getItem('userId') || null);
-  const [username, setUsername] = useState(localStorage.getItem('username') || '');
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // ✅ State
-
-  const handleLogin = (data) => {
-    setToken(data.token);
-    setUserId(data.user._id);
-    setUsername(data.user.username || data.user.email.split('@')[0]);
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('userId', data.user._id);
-    localStorage.setItem('username', data.user.username || data.user.email.split('@')[0]);
+  // ... getInitialUser function (no changes) ...
+  const getInitialUser = () => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (token && user) {
+      // Set the default auth header for all future axios requests
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      return { token, user: JSON.parse(user) };
+    }
+    return { token: null, user: null };
   };
 
+  const [auth, setAuth] = useState(getInitialUser);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // ... useEffect for auth (no changes) ...
+  useEffect(() => {
+    if (auth.token && auth.user) {
+      // Store in localStorage
+      localStorage.setItem('token', auth.token);
+      localStorage.setItem('user', JSON.stringify(auth.user));
+      // Set default auth header for axios
+      axios.defaults.headers.common['Authorization'] = `Bearer ${auth.token}`;
+    } else {
+      // Clear localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      // Remove auth header
+      delete axios.defaults.headers.common['Authorization'];
+    }
+  }, [auth]);
+
+  // ... handleLogin function (no changes) ...
+  const handleLogin = (token, user) => {
+    // Set partial auth state
+    setAuth({ token, user });
+    
+    // Check if the user object from login is complete.
+    // Google Auth only returns { _id: userId } initially.
+    if (!user.username) {
+      // *** FIX 1: Manually add Auth header to this specific request ***
+      // This fixes the 401 race condition.
+      axios.get(`http://localhost:3000/api/users/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(res => {
+          // Now set the auth state again with the *full* user object
+          setAuth({ token, user: res.data });
+        })
+        .catch(err => {
+          console.error("Failed to fetch full user data", err);
+          // If it fails, log out to be safe
+          handleLogout();
+        });
+    }
+  };
+
+  // ... handleLogout function (no changes) ...
   const handleLogout = () => {
-    setToken(null);
-    setUserId(null);
-    setUsername('');
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('username');
+    setAuth({ token: null, user: null });
+    navigate('/login');
   };
 
-  const ProtectedRoute = ({ children }) => {
-    return token ? children : <Navigate to="/login" />;
-  };
-
-  // NON-AUTHENTICATED PAGES (Login/Register)
-  if (!token) {
-    return (
-      <Router>
-        <div className="container" style={{ backgroundColor: 'var(--bg-dark)', minHeight: '100vh' }}>
-          <Routes>
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
-            <Route path="/" element={<Navigate to="/login" />} />
-          </Routes>
-        </div>
-      </Router>
-    );
-  }
-
-  // AUTHENTICATED PAGES (With Sidebar)
   return (
-    <Router>
-      <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-dark)' }}>
-        {/* ✅ FIXED: Pass setIsSidebarCollapsed prop */}
-        <Sidebar 
-          userId={userId} 
-          username={username}
-          onLogout={handleLogout}
-          isCollapsed={isSidebarCollapsed}
-          setIsCollapsed={setIsSidebarCollapsed}  // ← THIS WAS MISSING!
+    <Routes>
+      {/* PUBLIC ROUTES (no changes) */}
+      <Route 
+        path="/login" 
+        element={
+          !auth.user ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" />
+        } 
+      />
+      <Route 
+        path="/register" 
+        element={
+          !auth.user ? <Register onLogin={handleLogin} /> : <Navigate to="/dashboard" />
+        } 
+      />
+      
+      {/* GOOGLE CALLBACK ROUTE 
+        This is the route your backend redirects to.
+        It renders our AuthCallback component.
+      */}
+      <Route 
+        path="/auth/callback" 
+        element={<AuthCallback onLogin={handleLogin} />} 
+      />
+
+      {/* === MODIFIED PROTECTED ROUTES ===
+        We now have a parent <Route> that renders the ProtectedLayout.
+        All child routes (like /dashboard) will render *inside* the <Outlet /> of that layout.
+      */}
+      <Route 
+        element={
+          auth.user ? <ProtectedLayout user={auth.user} onLogout={handleLogout} /> : <Navigate to="/login" />
+        }
+      >
+        {/* All protected routes go inside here */}
+        <Route 
+          path="/dashboard" 
+          element={<Dashboard user={auth.user} />} 
         />
-        
-        <div style={{ 
-          flex: 1, 
-          marginLeft: isSidebarCollapsed ? '60px' : '250px',
-          padding: '20px',
-          transition: 'margin-left 0.3s ease'
-        }}>
-          <Routes>
-            <Route 
-              path="/user/:id" 
-              element={
-                <ProtectedRoute>
-                  <UserDetails token={token} />
-                </ProtectedRoute>
-              } 
-            />
-            <Route path="/" element={<Navigate to={`/user/${userId}`} />} />
-          </Routes>
-        </div>
-      </div>
-    </Router>
+        <Route 
+          path="/transactions" 
+          element={<TransactionDashboard />}
+        />
+        {/* When we add more pages, they go here:
+          <Route path="/transactions" element={<TransactionsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+        */}
+      </Route>
+      
+      {/* DEFAULT ROUTE (no changes) */}
+      <Route 
+        path="/dashboard" 
+        element={
+          auth.user ? <Dashboard user={auth.user} onLogout={handleLogout} /> : <Navigate to="/login" />
+        } 
+      />
+      
+      {/* DEFAULT ROUTE
+        Redirects the root path "/" to the dashboard or login page.
+      */}
+      <Route 
+        path="/" 
+        element={
+          auth.user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
+        } 
+      />
+
+      {/* CATCH-ALL (no changes) */}
+      <Route path="*" element={<div><h2>404 Not Found</h2></div>} />
+    </Routes>
   );
 }
 
