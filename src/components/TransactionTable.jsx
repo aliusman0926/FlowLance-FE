@@ -8,14 +8,13 @@ const TableIconButton = ({ icon, label, onClick, className = '' }) => (
   </button>
 );
 
-// --- Pen Icon (Edit) ---
+// --- Icons ---
 const EditIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
     <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V12h2.293z"/>
   </svg>
 );
 
-// --- Trash Icon (Delete) ---
 const DeleteIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
@@ -24,13 +23,15 @@ const DeleteIcon = () => (
 );
 
 
-function TransactionTable({ transactions, onEdit, onDelete }) {
+function TransactionTable({ transactions, onEdit, onDelete, currency = 'USD', rate = 1 }) {
   // Helper to format currency
   const formatCurrency = (amount) => {
-    const value = parseFloat(amount);
+    // Convert USD amount to selected currency
+    const value = parseFloat(amount) * rate;
+    
     const options = {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     };
@@ -76,9 +77,10 @@ function TransactionTable({ transactions, onEdit, onDelete }) {
         </thead>
         <tbody>
           {transactions.map((txn) => {
-            const total = txn.type === 'credit' ? txn.amount - txn.tax : txn.amount + txn.tax;
+            const totalUSD = txn.type === 'credit' ? txn.amount - txn.tax : txn.amount + txn.tax;
+            
             return (
-              <tr key={txn.id}>
+              <tr key={txn.id || txn._id}>
                 <td data-label="Date">{formatDate(txn.createdAt)}</td>
                 <td data-label="Type">
                   <span className={`txn-type-badge ${txn.type}`}>
@@ -95,7 +97,7 @@ function TransactionTable({ transactions, onEdit, onDelete }) {
                   ({formatCurrency(txn.tax)})
                 </td>
                 <td data-label="Total" className="td-amount td-total">
-                  {formatCurrency(total)}
+                  {formatCurrency(totalUSD)}
                 </td>
                 <td data-label="Actions" className="td-actions">
                   <TableIconButton

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import './TransactionDashboard.css';
 import TransactionTable from '../components/TransactionTable';
@@ -13,23 +13,31 @@ const BALANCE_URL = `${API_BASE_URL}/balances/user`;
 const TRANSACTIONS_URL = `${API_BASE_URL}/transactions/user`;
 const TRANSACTIONS_API = 'http://localhost:3000/api/transactions';
 
-// --- Reusable Bento Box Component ---
+// Real-time Free Currency API (No Key Required)
+const RATES_API = 'http://localhost:3000/api/rates';
 function BentoBox({ children, className = '' }) {
   return <div className={`bento-box ${className}`}>{children}</div>;
 }
 
-// --- Main Dashboard Component ---
 function TransactionDashboard() {
-  const token = localStorage.getItem('token'); // Get token from localStorage
+  const token = localStorage.getItem('token');
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // --- Currency State ---
+  // Default to USD only. Real rates will populate from API.
+  const [rates, setRates] = useState({ USD: 1 }); 
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [currencySearch, setCurrencySearch] = useState('');
+  const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState(false);
+  const [ratesError, setRatesError] = useState(null);
+
   // --- Modal State ---
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false); // <-- RENAMED
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // <-- ADDED
-  const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState('add');
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
 
@@ -37,54 +45,94 @@ function TransactionDashboard() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setRatesError(null);
+
     try {
+      // 1. Fetch CRITICAL Data (Balance & Transactions)
+      // We await this separately so dashboard always works even if rates fail
       const [balanceRes, transactionsRes] = await Promise.all([
-        axios.get(BALANCE_URL, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get(TRANSACTIONS_URL, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        axios.get(BALANCE_URL, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(TRANSACTIONS_URL, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
+
       setBalance(balanceRes.data.balance || 0);
       const sortedTransactions = transactionsRes.data.sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
       setTransactions(sortedTransactions);
+
     } catch (err) {
-      console.error('Failed to fetch data:', err);
+      console.error('Failed to fetch dashboard data:', err);
       setError('Failed to load dashboard data.');
+      setLoading(false);
+      return; // Stop if critical data fails
+    }
+
+    // 2. Fetch Currency Rates (Non-Critical)
+    try {
+      const ratesRes = await axios.get(RATES_API);
+      if (ratesRes.data && ratesRes.data.rates) {
+        setRates(ratesRes.data.rates);
+      }
+    } catch (rateErr) {
+      console.error('Currency API failed:', rateErr);
+      setRatesError('Real-time currency conversion unavailable.');
+      // We do NOT set static fallbacks. It stays at { USD: 1 }
     } finally {
       setLoading(false);
     }
-  }, [token]); // <-- Correct: Depends on token
+  }, [token]);
 
   useEffect(() => {
     if (token) {
       fetchData();
     }
-  }, [token, fetchData]); // <-- Correct: Depends on token and fetchData
+  }, [token, fetchData]);
 
-  // --- Modal Control Handlers ---
+  // --- Currency Logic ---
+  const filteredCurrencies = useMemo(() => {
+    return Object.keys(rates).filter(currency => 
+      currency.toLowerCase().includes(currencySearch.toLowerCase())
+    );
+  }, [rates, currencySearch]);
+
+  const handleCurrencySelect = (currency) => {
+    setSelectedCurrency(currency);
+    setIsCurrencyDropdownOpen(false);
+    setCurrencySearch('');
+  };
+
+  const currentRate = rates[selectedCurrency] || 1;
+
+  const formatDashboardCurrency = (amountInUSD) => {
+    const converted = amountInUSD * currentRate;
+    return converted.toLocaleString('en-US', {
+      style: 'currency',
+      currency: selectedCurrency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
+  // --- Modal Handlers ---
   const openAddModal = useCallback(() => {
     setModalMode('add');
     setSelectedTransaction(null);
-    setIsFormModalOpen(true); // <-- UPDATED
-  }, []); // <-- Correct: No dependencies
+    setIsFormModalOpen(true);
+  }, []);
 
   const openEditModal = useCallback((transaction) => {
     setModalMode('edit');
-    setSelectedTransaction(transaction); // <-- This sets the state
-    setIsFormModalOpen(true); // <-- UPDATED
-  }, []); // <-- Correct: No dependencies
+    setSelectedTransaction(transaction);
+    setIsFormModalOpen(true);
+  }, []);
 
-  const closeFormModal = useCallback(() => { // <-- RENAMED
-    setIsFormModalOpen(false); // <-- UPDATED
+  const closeFormModal = useCallback(() => {
+    setIsFormModalOpen(false);
     setSelectedTransaction(null);
-    setModalMode('add'); // Reset mode
-  }, []); // <-- Correct: No dependencies
+    setModalMode('add');
+  }, []);
 
-  // --- ADDED: Delete Modal Handlers ---
   const openDeleteModal = useCallback((transaction) => {
     setSelectedTransaction(transaction);
     setIsDeleteModalOpen(true);
@@ -95,9 +143,7 @@ function TransactionDashboard() {
     setIsDeleteModalOpen(false);
   }, []);
 
-
   // --- CRUD Handlers ---
-
   const handleFormSubmit = useCallback(async (formData) => {
     setFormLoading(true);
     try {
@@ -106,105 +152,110 @@ function TransactionDashboard() {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        // --- THIS IS THE FIX ---
-
-        // 1. Change the safeguard to check for `id` OR `_id`.
-        //    This also makes the console log *much* clearer.
         if (!selectedTransaction || (!selectedTransaction.id && !selectedTransaction._id)) {
-          console.error('Submit error: selectedTransaction is missing an ID', selectedTransaction);
           throw new Error('No transaction selected for editing.');
         }
-
-        // 2. Get the ID, preferring `id` but falling back to `_id`.
         const transactionId = selectedTransaction.id || selectedTransaction._id;
-
         await axios.put(
-          // 3. Use the correct `transactionId` in the API call.
           `${TRANSACTIONS_API}/${transactionId}`,
           formData,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
       }
-      await fetchData(); // Refresh all data
-      closeFormModal(); // <-- UPDATED
+      await fetchData();
+      closeFormModal();
     } catch (err) {
       console.error(`Failed to ${modalMode} transaction:`, err);
-      throw err; // Re-throw to be caught by TransactionForm
+      throw err;
     } finally {
       setFormLoading(false);
     }
-  }, 
-  [
-    // --- THIS IS THE FIX ---
-    // The function MUST be rebuilt when these values change.
-    // Your old version was likely missing `selectedTransaction` or `modalMode`.
-    modalMode, 
-    selectedTransaction, 
-    token, 
-    fetchData, 
-    closeFormModal // <-- UPDATED
-  ]);
+  }, [modalMode, selectedTransaction, token, fetchData, closeFormModal]);
 
-  // --- UPDATED: This is now the actual delete logic ---
   const handleConfirmDelete = useCallback(async () => {
-    if (!selectedTransaction || (!selectedTransaction.id && !selectedTransaction._id)) {
-      console.error('Delete error: No transaction selected.');
-      return;
-    }
+    if (!selectedTransaction || (!selectedTransaction.id && !selectedTransaction._id)) return;
     const transactionId = selectedTransaction.id || selectedTransaction._id;
     
-    setFormLoading(true); // Reuse loading state to disable buttons
+    setFormLoading(true);
     try {
       await axios.delete(`${TRANSACTIONS_API}/${transactionId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      await fetchData(); // Refresh data
-      closeDeleteModal(); // Close modal on success
+      await fetchData();
+      closeDeleteModal();
     } catch (err) {
       console.error('Failed to delete transaction:', err);
-      // You could set a specific error state for the delete modal here
     } finally {
       setFormLoading(false);
     }
   }, [selectedTransaction, token, fetchData, closeDeleteModal]);
 
-  // --- Helper to format currency ---
-  const formatCurrency = (amount) => {
-    const value = parseFloat(amount);
-    if (isNaN(value)) return '$0.00';
-    return value.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
 
-  if (loading) {
-    return <div className="dashboard-loading"></div>;
-  }
-
-  if (error) {
-    return <div className="dashboard-error">{error}</div>;
-  }
+  if (loading) return <div className="dashboard-loading"></div>;
+  if (error) return <div className="dashboard-error">{error}</div>;
 
   return (
     <div className="bento-grid-container">
+      {/* --- Currency Filter Header --- */}
+      <div className="dashboard-header-controls">
+        <div className="currency-selector-wrapper">
+          <label>View in:</label>
+          <div className="currency-dropdown">
+            <input 
+              type="text" 
+              placeholder={selectedCurrency} 
+              value={currencySearch}
+              onChange={(e) => {
+                setCurrencySearch(e.target.value);
+                setIsCurrencyDropdownOpen(true);
+              }}
+              onFocus={() => setIsCurrencyDropdownOpen(true)}
+              className="currency-search-input"
+              disabled={!!ratesError} // Disable if API failed
+            />
+            {ratesError && <span className="currency-error-tooltip">Offline</span>}
+            
+            {isCurrencyDropdownOpen && !ratesError && (
+              <ul className="currency-list">
+                {filteredCurrencies.map(curr => (
+                  <li 
+                    key={curr} 
+                    onClick={() => handleCurrencySelect(curr)}
+                    className={curr === selectedCurrency ? 'active' : ''}
+                  >
+                    <span className="curr-code">{curr}</span>
+                    <span className="curr-rate">{rates[curr].toFixed(2)}</span>
+                  </li>
+                ))}
+                {filteredCurrencies.length === 0 && <li className="no-results">No currency found</li>}
+              </ul>
+            )}
+            
+            {isCurrencyDropdownOpen && (
+              <div className="currency-backdrop" onClick={() => setIsCurrencyDropdownOpen(false)}></div>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="bento-grid">
         {/* --- Balance Box --- */}
         <BentoBox className="balance-box">
           <h3 className="bento-title">Current Balance</h3>
-          <p className="balance-amount">{formatCurrency(balance)}</p>
+          <p className="balance-amount">{formatDashboardCurrency(balance)}</p>
           <button className="log-txn-btn" onClick={openAddModal}>
-            + Log Transaction
+            + Log Transaction (USD)
           </button>
         </BentoBox>
 
+        {/* --- Chart Box --- */}
         <BentoBox className="graph-box">
-          <h3 className="bento-title">Transaction History</h3>
-          <TransactionChart transactions={transactions} />
+          <h3 className="bento-title">Transaction History ({selectedCurrency})</h3>
+          <TransactionChart 
+            transactions={transactions} 
+            currency={selectedCurrency}
+            rate={currentRate}
+          />
         </BentoBox>
 
         {/* --- Table Box --- */}
@@ -213,35 +264,33 @@ function TransactionDashboard() {
           <TransactionTable 
             transactions={transactions}
             onEdit={openEditModal}
-            onDelete={openDeleteModal} // <-- UPDATED
+            onDelete={openDeleteModal}
+            currency={selectedCurrency}
+            rate={currentRate}
           />
         </BentoBox>
       </div>
+
       <Modal
-        isOpen={isFormModalOpen} // <-- UPDATED
-        onClose={closeFormModal} // <-- UPDATED
+        isOpen={isFormModalOpen}
+        onClose={closeFormModal}
         title={modalMode === 'add' ? 'Log New Transaction' : 'Edit Transaction'}
       >
         <TransactionForm
           onSubmit={handleFormSubmit}
-          onComplete={closeFormModal} // <-- UPDATED
+          onComplete={closeFormModal}
           initialData={selectedTransaction}
           loading={formLoading}
         />
       </Modal>
 
-      {/* --- ADDED: Delete Confirmation Modal --- */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={closeDeleteModal}
         title="Confirm Deletion"
       >
         <ConfirmDeleteModal
-          message={`Are you sure you want to delete this transaction? ${
-            selectedTransaction?.description
-              ? `(${selectedTransaction.description})`
-              : ''
-          }`}
+          message={`Are you sure you want to delete this transaction?`}
           onConfirm={handleConfirmDelete}
           onCancel={closeDeleteModal}
           loading={formLoading}
@@ -252,5 +301,3 @@ function TransactionDashboard() {
 }
 
 export default TransactionDashboard;
-
-
