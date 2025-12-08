@@ -6,6 +6,7 @@ import Modal from '../components/Modal';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import TransactionChart from '../components/TransactionChart';
 import TransactionForm from '../components/TransactionForm';
+import DatePicker from "react-datepicker";
 
 // --- API Endpoints ---
 const API_BASE_URL = 'http://localhost:3000/api';
@@ -25,6 +26,8 @@ function TransactionDashboard() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   // --- Currency State ---
   // Default to USD only. Real rates will populate from API.
@@ -50,16 +53,11 @@ function TransactionDashboard() {
     try {
       // 1. Fetch CRITICAL Data (Balance & Transactions)
       // We await this separately so dashboard always works even if rates fail
-      const [balanceRes, transactionsRes] = await Promise.all([
-        axios.get(BALANCE_URL, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(TRANSACTIONS_URL, { headers: { Authorization: `Bearer ${token}` } }),
+      const [balanceRes] = await Promise.all([
+        axios.get(BALANCE_URL, { headers: { Authorization: `Bearer ${token}` } })
       ]);
 
       setBalance(balanceRes.data.balance || 0);
-      const sortedTransactions = transactionsRes.data.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
-      setTransactions(sortedTransactions);
 
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
@@ -88,6 +86,34 @@ function TransactionDashboard() {
       fetchData();
     }
   }, [token, fetchData]);
+
+  // --- Transaction Loading with Date Filters ---
+  const loadTransactions = async (start, end) => {
+    try {
+      const params = {};
+      if (start) params.start_date = start;
+      if (end) params.end_date = end;
+
+      const res = await axios.get(TRANSACTIONS_URL, {
+        headers: { Authorization: `Bearer ${token}` },
+        params
+      });
+
+      const sorted = res.data.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+
+      setTransactions(sorted);
+
+    } catch (err) {
+      console.error("Error loading transactions:", err);
+    }
+  };
+
+  useEffect(() => {
+    // Avoid calling unnecessarily if both are empty
+    loadTransactions(startDate, endDate);
+  }, [startDate, endDate]);
 
   // --- Currency Logic ---
   const filteredCurrencies = useMemo(() => {
@@ -190,6 +216,36 @@ function TransactionDashboard() {
     }
   }, [selectedTransaction, token, fetchData, closeDeleteModal]);
 
+  // --- Report Generation ---
+  // Assuming you have a startDate and endDate state variables
+  const generateReport = async () => {
+    try {
+      // Build the query string only if dates are provided
+      let query = '';
+      if (startDate || endDate) {
+        const params = new URLSearchParams();
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        query = `?${params.toString()}`;
+      }
+
+      const response = await fetch(`/api/transactions/report${query}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // Or wherever your token is stored
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to generate report');
+
+      const blob = await response.blob(); // Convert response to blob (PDF)
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank'); // Open PDF in new tab
+    } catch (err) {
+      console.error(err);
+      alert('Error generating report.');
+    }
+  };
 
   if (loading) return <div className="dashboard-loading"></div>;
   if (error) return <div className="dashboard-error">{error}</div>;
@@ -197,7 +253,7 @@ function TransactionDashboard() {
   return (
     <div className="bento-grid-container">
       {/* --- Currency Filter Header --- */}
-      <div className="dashboard-header-controls">
+      <div className="bento-header">
         <div className="currency-selector-wrapper">
           <label>View in:</label>
           <div className="currency-dropdown">
@@ -236,6 +292,32 @@ function TransactionDashboard() {
             )}
           </div>
         </div>
+
+          <div className="date-filters-inline">
+              <DatePicker
+                selected={startDate ? new Date(startDate) : null}
+                onChange={(date) => setStartDate(date ? date.toISOString().split("T")[0] : "")}
+                placeholderText="Start Date"
+                dateFormat="MMM d, yyyy"
+                className="date-pill"
+                calendarClassName="dark-calendar"
+                popperClassName="calendar-popper"
+                showPopperArrow={false}
+              />
+
+              <span className="date-separator">→</span>
+
+              <DatePicker
+                selected={endDate ? new Date(endDate) : null}
+                onChange={(date) => setEndDate(date ? date.toISOString().split("T")[0] : "")}
+                placeholderText="End Date"
+                dateFormat="MMM d, yyyy"
+                className="date-pill"
+                calendarClassName="dark-calendar"
+                popperClassName="calendar-popper"
+                showPopperArrow={false}
+              />
+          </div>
       </div>
 
       <div className="bento-grid">
@@ -257,10 +339,22 @@ function TransactionDashboard() {
             rate={currentRate}
           />
         </BentoBox>
+        
+        {/* --- Report Box --- */}
+        <BentoBox className="graph-box">
+          <h3 className="bento-title">Generate Reports</h3>
+          <p className="report-text">Click to generate income statement and tax report of this specified time period.</p>
+          <button className="log-txn-btn"
+           onClick={generateReport}
+          >
+            Generate Tax Report
+          </button>
+        </BentoBox>
 
         {/* --- Table Box --- */}
         <BentoBox className="table-box">
           <h3 className="bento-title">All Transactions</h3>
+
           <TransactionTable 
             transactions={transactions}
             onEdit={openEditModal}

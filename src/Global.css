@@ -6,6 +6,7 @@
 :root {
   --bg-color: #111111;
   --card-color: #1a1a1a;
+  --hover-color: #3f3f3f;
   --border-color: #333333;
   --text-primary: #f0f0f0;
   --text-secondary: #aaaaaa;
@@ -18,6 +19,26 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+/* Styling for unvisited links */
+a:link {
+  color: var(--text-primary); /* Example: Sets unvisited links to blue */
+}
+
+/* Styling for visited links */
+a:visited {
+  color: var(--text-primary); /* Example: Sets visited links to purple */
+}
+
+/* Styling for links when hovered over */
+a:hover {
+  color: var(--text-primary); /* Example: Sets links to red on hover */
+}
+
+/* Styling for active links (while being clicked) */
+a:active {
+  color: var(--text-primary); /* Example: Sets active links to green */
 }
 
 body {
@@ -123,4 +144,70 @@ body {
      but CardNav seems to be a self-contained component.
      Let's start without padding and add it if needed.
   */
+}
+
+/* === CALENDAR STYLES === */
+/* Force high z-index so it appears above BentoBox */
+.calendar-popper {
+  z-index: 99999 !important;
+}
+
+/* Full dark theme */
+.dark-calendar {
+  background: #111 !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 12px !important;
+  color: #fff !important;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.45) !important;
+  padding: 10px !important;
+}
+
+/* Month header */
+.dark-calendar .react-datepicker__current-month {
+  color: #fff;
+  font-weight: 600;
+}
+
+.dark-calendar .react-datepicker__header {
+  background: #111 !important;
+  border-bottom: 1px solid #222 !important;
+}
+
+/* Navigation arrows */
+.dark-calendar .react-datepicker__navigation-icon::before {
+  border-color: #fff !important;
+}
+
+/* Days */
+.dark-calendar .react-datepicker__day {
+  color: #ddd !important;
+}
+
+.dark-calendar .react-datepicker__day:hover {
+  background: #222 !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+}
+
+/* Selected day */
+.dark-calendar .react-datepicker__day--selected,
+.dark-calendar .react-datepicker__day--keyboard-selected {
+  background: var(--accent-color) !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+}
+
+/* Today highlight */
+.dark-calendar .react-datepicker__day--today {
+  border: 1px solid var(--accent-color) !important;
+  border-radius: 8px !important;
+}
+
+/* Month dropdown (if used) */
+.dark-calendar .react-datepicker__month-select,
+.dark-calendar .react-datepicker__year-select {
+  background: #1a1a1a !important;
+  color: #fff !important;
+  border: 1px solid #333 !important;
+  border-radius: 6px !important;
 }

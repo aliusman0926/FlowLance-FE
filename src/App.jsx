@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation, Outlet } from 'react-router-dom'; // Import Outlet
 import axios from 'axios';
+// e.g., in your top-level App.jsx or in the file where you use DatePicker
+import "react-datepicker/dist/react-datepicker.css";
 
 // Import Auth Components
 import Login from './components/Login';
@@ -85,8 +87,8 @@ function AuthCallback({ onLogin }) {
 const items = [
     {
       label: "Financials",
-      bgColor: "#0a7140",
-      textColor: "#eefff6",
+      bgColor: "var(--accent-color)",
+      textColor: "var(--text-primary)",
       links: [
         { label: "Transactions", href: '/transactions' },
         { label: "Tax Report", ariaLabel: "Tax Report" }
@@ -94,8 +96,8 @@ const items = [
     },
     {
       label: "Projects", 
-      bgColor: "#0a7140",
-      textColor: "#eefff6",
+      bgColor: "var(--accent-color)",
+      textColor: "var(--text-primary)",
       links: [
         { label: "Featured", ariaLabel: "Featured Projects" },
         { label: "Case Studies", ariaLabel: "Project Case Studies" }
@@ -103,8 +105,8 @@ const items = [
     },
     {
       label: "Contact",
-      bgColor: "#0a7140", 
-      textColor: "#eefff6",
+      bgColor: "var(--accent-color)", 
+      textColor: "var(--text-primary)",
       links: [
         { label: "Email", ariaLabel: "Email us" },
         { label: "Twitter", ariaLabel: "Twitter" },
