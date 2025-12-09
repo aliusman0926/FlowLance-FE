@@ -179,6 +179,20 @@
   background: var(--accent-color-red-hover);
 }
 
+.btn-close {
+  font-size: 20px;
+  color: var(--text-primary);
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+}
+
+.btn-close:hover {
+  background: var(--border-color);
+}
+
 /* Milestones */
 .milestones {
   margin-top: 12px;
@@ -250,6 +264,7 @@
   align-items: center;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
 }
 
 .modal-header h3 {

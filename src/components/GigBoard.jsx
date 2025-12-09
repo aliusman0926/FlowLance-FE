@@ -8,6 +8,21 @@ import { FaTrash } from "react-icons/fa";
 import { TbRefresh } from "react-icons/tb";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useDroppable } from "@dnd-kit/core";
+
 
 // GigBoard.jsx
 // Single-file React component (default export) that implements a minimal, modern, Jira-like
@@ -30,6 +45,13 @@ export default function GigBoard() {
   const [gigs, setGigs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const sensors = useSensors(
+  useSensor(PointerSensor, {
+        activationConstraint: {
+        distance: 8,
+        },
+    })
+    );
 
   // UI state
   const [selectedGig, setSelectedGig] = useState(null);
@@ -191,6 +213,37 @@ export default function GigBoard() {
     }
   }
 
+  // Drag and drop handlers
+  async function handleDragEnd(event) {
+    const { active, over } = event;
+
+    // dropped outside any column
+    if (!over) return;
+
+    const gigId = active.id;
+    const newStatus = over.id; // ✅ this is now column name
+
+    // Safety check
+    if (!columns.includes(newStatus)) return;
+
+    const gig = gigs.find(g => g._id === gigId);
+    if (!gig || gig.status === newStatus) return;
+
+    // Optimistic UI
+    setGigs(prev =>
+        prev.map(g =>
+        g._id === gigId ? { ...g, status: newStatus } : g
+        )
+    );
+
+    try {
+        await API.updateGig(gigId, { status: newStatus });
+    } catch (err) {
+        console.error(err);
+        loadGigs(); // rollback if backend fails
+    }
+}
+
   // Mark complete toggles
   async function toggleMilestoneDone(gigId, m) {
     const newStatus = m.status === 'Done' ? 'To Do' : 'Done';
@@ -228,58 +281,71 @@ export default function GigBoard() {
       {loading ? (
         <div>Loading...</div>
       ) : (
-        <div className="board-columns">
-          {columns.map(col => (
-            <div key={col} className="board-column">
-              <h2>{col}</h2>
-              <div className="space-y-3">
-                {gigs.filter(g => g.status === col).map(g => (
-                  <div key={g._id} className="gig-card">
-                    <div className="gig-card-header">
-                      <div>
-                        <h3 className="gig-title">{g.title}</h3>
-                        <p className="gig-client">{g.clientName || '—'}</p>
-                        <p className="gig-desc">{g.description?.slice(0, 120)}</p>
-                        <div className="gig-actions">
-                          <button className="btn-secondary" onClick={()=>{ openModal('addMilestone', { gigId: g._id, gig: g }); }}><FaPlusCircle /></button>
-                          <button className="btn-secondary" onClick={()=>{ openModal('editGig', g); }}><FaEdit /></button>
-                          <button className="btn" onClick={()=>toggleGigComplete(g)}>{g.status==='Completed'?<FaRegCheckCircle />:<FaCheckCircle />}</button>
-                          <button className="btn-danger" onClick={()=>handleDeleteGig(g._id)}><FaTrash></FaTrash></button>
-                        </div>
-                      </div>
-                      <div className="gig-meta">
-                        <div>Value</div>
-                        <div className="strong">${Number(g.totalValue||0).toFixed(2)}</div>
-                        <div className="gig-meta">Due: {g.dueDate ? new Date(g.dueDate).toLocaleDateString() : '—'}</div>
-                      </div>
-                    </div>
-
-                    {/* Milestones list */}
-                    <div className="milestones">
-                      {(milestones[g._id]||[]).map(m => (
-                        <div key={m._id} className="milestone">
-                          <div>
-                            <div className="milestone-title">{m.title}</div>
-                            <div className="milestone-desc">{m.description?.slice(0, 80)}</div>
-                            <div className="milestone-meta">{m.status} • ${Number(m.paymentAmount||0).toFixed(2)}</div>
-                          </div>
-                          <div className="milestone-actions">
-                            <div className="milestone-actions">
-                              <button title="Toggle Done" className="milestone-btn" onClick={()=>toggleMilestoneDone(g._id, m)}>{m.status==='Done'?<FaCheckCircle />:<FaRegCheckCircle />}</button>
-                              <button title="Edit" className="btn-secondary" onClick={()=>openModal('editMilestone', { gigId: g._id, milestone: m })}><FaEdit /></button>
-                              <button title="Delete" className="btn-danger" onClick={()=>handleDeleteMilestone(g._id, m._id)}><FaTrash /></button>
+        <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+        >
+            <div className="board-columns">
+            {columns.map(col => (
+                <DroppableColumn key={col} id={col}>
+                <h2>{col}</h2>
+                <div className="space-y-3">
+                    <SortableContext
+                    items={gigs.filter(g => g.status === col).map(g => g._id)}
+                    strategy={verticalListSortingStrategy}
+                    >
+                    {gigs.filter(g => g.status === col).map(g => (
+                    <DraggableGig key={g._id} gig={g}>
+                    <div className="gig-card">
+                        <div className="gig-card-header">
+                        <div>
+                            <h3 className="gig-title">{g.title}</h3>
+                            <p className="gig-client">{g.clientName || '—'}</p>
+                            <p className="gig-desc">{g.description?.slice(0, 120)}</p>
+                            <div className="gig-actions">
+                            <button className="btn-secondary" onClick={()=>{ openModal('addMilestone', { gigId: g._id, gig: g }); }}><FaPlusCircle /></button>
+                            <button className="btn-secondary" onClick={()=>{ openModal('editGig', g); }}><FaEdit /></button>
+                            <button className="btn" onClick={()=>toggleGigComplete(g)}>{g.status==='Completed'?<FaCheckCircle />:<FaRegCheckCircle />}</button>
+                            <button className="btn-danger" onClick={()=>handleDeleteGig(g._id)}><FaTrash></FaTrash></button>
                             </div>
-                          </div>
                         </div>
-                      ))}
-                    </div>
+                        <div className="gig-meta">
+                            <div>Value</div>
+                            <div className="strong">${Number(g.totalValue||0).toFixed(2)}</div>
+                            <div className="gig-meta">Due: {g.dueDate ? new Date(g.dueDate).toLocaleDateString() : '—'}</div>
+                        </div>
+                        </div>
 
-                  </div>
+                        {/* Milestones list */}
+                        <div className="milestones">
+                        {(milestones[g._id]||[]).map(m => (
+                            <div key={m._id} className="milestone">
+                            <div>
+                                <div className="milestone-title">{m.title}</div>
+                                <div className="milestone-desc">{m.description?.slice(0, 80)}</div>
+                                <div className="milestone-meta">{m.status} • ${Number(m.paymentAmount||0).toFixed(2)}</div>
+                            </div>
+                            <div className="milestone-actions">
+                                <div className="milestone-actions">
+                                <button title="Toggle Done" className="milestone-btn" onClick={()=>toggleMilestoneDone(g._id, m)}>{m.status==='Done'?<FaCheckCircle />:<FaRegCheckCircle />}</button>
+                                <button title="Edit" className="btn-secondary" onClick={()=>openModal('editMilestone', { gigId: g._id, milestone: m })}><FaEdit /></button>
+                                <button title="Delete" className="btn-danger" onClick={()=>handleDeleteMilestone(g._id, m._id)}><FaTrash /></button>
+                                </div>
+                            </div>
+                            </div>
+                        ))}
+                        </div>
+
+                    </div>
+                    </DraggableGig>
                 ))}
-              </div>
+                </SortableContext>
+                </div>
+                </DroppableColumn>
+            ))}
             </div>
-          ))}
-        </div>
+        </DndContext>
       )}
 
       {/* MODAL */}
@@ -293,7 +359,7 @@ export default function GigBoard() {
                 {modalType === 'addMilestone' && 'Create Milestone'}
                 {modalType === 'editMilestone' && 'Edit Milestone'}
               </h3>
-              <button className="btn" onClick={closeModal}>✕</button>
+              <button className="btn-close" onClick={closeModal}>✕</button>
             </div>
 
             <form className='txn-form' onSubmit={e => {
@@ -392,7 +458,7 @@ export default function GigBoard() {
               )}
 
               <div className="modal-actions">
-                <button type="button" className="btn" onClick={closeModal}>Cancel</button>
+                <button type="button" className="btn-danger" onClick={closeModal}>Cancel</button>
                 <button className="btn">Save</button>
               </div>
             </form>
@@ -400,6 +466,49 @@ export default function GigBoard() {
         </div>
       )}
 
+    </div>
+  );
+}
+
+function DraggableGig({ gig, children }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: gig._id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+    >
+      {children}
+    </div>
+  );
+}
+
+function DroppableColumn({ id, children }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className="board-column"
+      style={{
+        outline: isOver ? "2px dashed #4CAF50" : "none",
+        outlineOffset: "4px",
+      }}
+    >
+      {children}
     </div>
   );
 }
