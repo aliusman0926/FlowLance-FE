@@ -7,6 +7,9 @@ import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import TransactionChart from '../components/TransactionChart';
 import TransactionForm from '../components/TransactionForm';
 import DatePicker from "react-datepicker";
+import { FaFileCsv } from "react-icons/fa6";
+import { TbFileTypeCsv } from "react-icons/tb";
+import { PiFileCsvFill } from "react-icons/pi";
 
 // --- API Endpoints ---
 const API_BASE_URL = 'http://localhost:3000/api';
@@ -189,6 +192,7 @@ function TransactionDashboard() {
         );
       }
       await fetchData();
+      await loadTransactions(startDate, endDate);
       closeFormModal();
     } catch (err) {
       console.error(`Failed to ${modalMode} transaction:`, err);
@@ -196,7 +200,7 @@ function TransactionDashboard() {
     } finally {
       setFormLoading(false);
     }
-  }, [modalMode, selectedTransaction, token, fetchData, closeFormModal]);
+  }, [modalMode, selectedTransaction, token, fetchData, loadTransactions, closeFormModal]);
 
   const handleConfirmDelete = useCallback(async () => {
     if (!selectedTransaction || (!selectedTransaction.id && !selectedTransaction._id)) return;
@@ -208,13 +212,14 @@ function TransactionDashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
       await fetchData();
+      await loadTransactions(startDate, endDate);
       closeDeleteModal();
     } catch (err) {
       console.error('Failed to delete transaction:', err);
     } finally {
       setFormLoading(false);
     }
-  }, [selectedTransaction, token, fetchData, closeDeleteModal]);
+  }, [selectedTransaction, token, fetchData, loadTransactions, closeDeleteModal]);
 
   // --- Report Generation ---
   // Assuming you have a startDate and endDate state variables
@@ -245,6 +250,80 @@ function TransactionDashboard() {
       console.error(err);
       alert('Error generating report.');
     }
+  };
+
+  // Upload CSV
+  const uploadCSVHandler = async (file) => {
+    if (!file) {
+      throw new Error("No file selected");
+    }
+
+    if (file.type !== "text/csv") {
+      throw new Error("Only CSV files are allowed");
+    }
+
+    // Read file content
+    const text = await file.text();
+    const lines = text.trim().split("\n");
+
+    if (lines.length < 2) {
+      throw new Error("CSV file is empty or missing data");
+    }
+
+    // ✅ Validate headers
+    const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+    const requiredHeaders = ["amount", "type"];
+
+    for (const header of requiredHeaders) {
+      if (!headers.includes(header)) {
+        throw new Error(`Missing required header: ${header}`);
+      }
+    }
+
+    // ✅ Validate each row
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(",").map(v => v.trim());
+      const row = Object.fromEntries(headers.map((h, idx) => [h, values[idx]]));
+
+      const amount = parseFloat(row.amount);
+      const type = row.type?.toLowerCase();
+
+      if (isNaN(amount)) {
+        throw new Error(`Invalid amount at row ${i + 1}`);
+      }
+
+      if (!["credit", "debit"].includes(type)) {
+        throw new Error(`Invalid type at row ${i + 1}. Must be credit or debit`);
+      }
+
+      if (row.taxpercentage && isNaN(parseFloat(row.taxpercentage))) {
+        throw new Error(`Invalid taxPercentage at row ${i + 1}`);
+      }
+    }
+
+    // ✅ If validation passes, send to backend
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${TRANSACTIONS_API}/uploadCSV`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      },
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "CSV upload failed");
+    } else {
+      // Refresh data after successful upload
+      await fetchData();
+      await loadTransactions(startDate, endDate);
+    }
+
+    return data;
   };
 
   if (loading) return <div className="dashboard-loading"></div>;
@@ -328,6 +407,15 @@ function TransactionDashboard() {
           <button className="log-txn-btn" onClick={openAddModal}>
             + Log Transaction (USD)
           </button>
+          <label className="log-txn-btn">
+            <TbFileTypeCsv />  Import CSV
+            <input
+              type="file"
+              accept=".csv"
+              hidden
+              onChange={uploadCSVHandler}
+            />
+          </label>
         </BentoBox>
 
         {/* --- Chart Box --- */}

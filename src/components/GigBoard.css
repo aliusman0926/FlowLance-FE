@@ -336,7 +336,7 @@
   border: none;
   color: white;
   padding: 12px;
-  border-radius: 14px;
+  border-radius: 6px;
   font-size: 15px;
   font-weight: 600;
 }
@@ -348,6 +348,12 @@
 .error {
   color: var(--danger);
   margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.invoice-prompt-text {
+  margin-top: 10px;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 

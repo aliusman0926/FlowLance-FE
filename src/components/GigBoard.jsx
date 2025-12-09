@@ -58,6 +58,12 @@ export default function GigBoard() {
   const [modalType, setModalType] = useState(null); // 'addGig'|'editGig'|'addMilestone'|'editMilestone'
   const [formData, setFormData] = useState({});
   const [milestones, setMilestones] = useState({}); // map gigId -> array of milestones
+  const [invoicePrompt, setInvoicePrompt] = useState({
+          open: false,
+          milestoneId: null,
+          clientName: '',
+          freelancerName: ''
+        });
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
@@ -248,6 +254,14 @@ export default function GigBoard() {
   async function toggleMilestoneDone(gigId, m) {
     const newStatus = m.status === 'Done' ? 'To Do' : 'Done';
     await handleUpdateMilestone(gigId, m._id, { ...m, status: newStatus });
+    
+    // 🔥 Open invoice prompt
+    if (newStatus === 'Done') {
+      setInvoicePrompt({
+        open: true,
+        milestoneId: m._id,
+      });
+    }
   }
 
   async function toggleGigComplete(g) {
@@ -266,6 +280,43 @@ export default function GigBoard() {
 
   // Simple columns based on gig status
   const columns = ['Open', 'In Progress', 'Completed', 'Archived'];
+
+  const getBackendBaseUrl = () => {
+    const { protocol, hostname } = window.location;
+
+    // Assumes backend runs on same host but different port (common setup)
+    return `${protocol}//${hostname}:3000/api`;
+  };
+
+  const generateInvoice = async (milestoneId, clientName, freelancerName) => {
+    try {
+      const params = new URLSearchParams({
+        clientName,
+        freelancerName
+      });
+
+      const response = await fetch(
+        `${getBackendBaseUrl()}/milestones/${milestoneId}/invoice?${params.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to generate invoice');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (err) {
+      console.error(err);
+      alert('Error generating invoice.');
+    }
+  };
 
   return (
     <div className="gig-board">
@@ -328,7 +379,7 @@ export default function GigBoard() {
                             </div>
                             <div className="milestone-actions">
                                 <div className="milestone-actions">
-                                <button title="Toggle Done" className="milestone-btn" onClick={()=>toggleMilestoneDone(g._id, m)}>{m.status==='Done'?<FaCheckCircle />:<FaRegCheckCircle />}</button>
+                                <button title="Toggle Done" className="milestone-btn" onClick={() => toggleMilestoneDone(g._id,m)}>{m.status==='Done'?<FaCheckCircle />:<FaRegCheckCircle />}</button>
                                 <button title="Edit" className="btn-secondary" onClick={()=>openModal('editMilestone', { gigId: g._id, milestone: m })}><FaEdit /></button>
                                 <button title="Delete" className="btn-danger" onClick={()=>handleDeleteMilestone(g._id, m._id)}><FaTrash /></button>
                                 </div>
@@ -462,6 +513,66 @@ export default function GigBoard() {
                 <button className="btn">Save</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* INVOICE PROMPT */}
+      {invoicePrompt.open && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h3>Generate Invoice?</h3>
+
+            <p className="invoice-prompt-text">
+              Please enter the client and freelancer names to sign the invoice.
+            </p>
+
+            <input
+              type="text"
+              placeholder="Client Name"
+              value={invoicePrompt.clientName}
+              className="invoice-prompt-text"
+              onChange={(e) =>
+                setInvoicePrompt((prev) => ({ ...prev, clientName: e.target.value }))
+              }
+              style={{ marginBottom: '0.5rem', width: '100%', padding: '0.5rem' }}
+            />
+
+            <input
+              type="text"
+              placeholder="Freelancer Name"
+              value={invoicePrompt.freelancerName}
+              className="invoice-prompt-text"
+              onChange={(e) =>
+                setInvoicePrompt((prev) => ({ ...prev, freelancerName: e.target.value }))
+              }
+              style={{ marginBottom: '1rem', width: '100%', padding: '0.5rem' }}
+            />
+
+            <div className="modal-actions">
+              <button
+                className="btn-danger"
+                onClick={() =>
+                  setInvoicePrompt({ open: false, milestoneId: null, clientName: '', freelancerName: '' })
+                }
+              >
+                Not Now
+              </button>
+
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  generateInvoice(
+                    invoicePrompt.milestoneId,
+                    invoicePrompt.clientName,
+                    invoicePrompt.freelancerName
+                  );
+                  setInvoicePrompt({ open: false, milestoneId: null, clientName: '', freelancerName: '' });
+                }}
+              >
+                Generate Invoice
+              </button>
+            </div>
           </div>
         </div>
       )}
