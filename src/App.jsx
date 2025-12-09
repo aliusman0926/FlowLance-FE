@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation, Outlet } from 'react-router-dom'; // Import Outlet
+import { Routes, Route, Navigate, useNavigate, useLocation, Outlet, href } from 'react-router-dom'; // Import Outlet
 import axios from 'axios';
 // e.g., in your top-level App.jsx or in the file where you use DatePicker
 import "react-datepicker/dist/react-datepicker.css";
@@ -11,6 +11,7 @@ import GoogleAuth from './components/GoogleAuth';
 import CardNav from './components/CardNav';
 import logo from './assets/logo.svg';
 import TransactionDashboard from './components/TransactionDashboard';
+import GigBoard from './components/GigBoard';
 
 // Import Global CSS
 import './Global.css';
@@ -99,7 +100,7 @@ const items = [
       bgColor: "var(--accent-color)",
       textColor: "var(--text-primary)",
       links: [
-        { label: "Featured", ariaLabel: "Featured Projects" },
+        { label: "Gigs", href: '/gigs' },
         { label: "Case Studies", ariaLabel: "Project Case Studies" }
       ]
     },
@@ -249,6 +250,10 @@ function App() {
         <Route 
           path="/transactions" 
           element={<TransactionDashboard />}
+        />
+        <Route 
+          path="/gigs" 
+          element={<GigBoard />}
         />
         {/* When we add more pages, they go here:
           <Route path="/transactions" element={<TransactionsPage />} />

@@ -1,0 +1,464 @@
+/* GigBoard.css
+   Plain CSS (no Tailwind) for GigBoard.jsx
+   Clean, minimal, Jira-inspired look
+*/
+
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --text: #898989;
+  --muted: #b1b4bc;
+  --primary: #4f46e5; /* indigo */
+  --danger: #dc2626;
+  --radius: 10px;
+  --milestone-button: #13623c;
+  --milestone-button-hover: #065a30;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Layout */
+.gig-board {
+  padding: 24px;
+  min-height: 100vh;
+}
+
+.gig-board-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.gig-board-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.board-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+/* Column */
+.board-column {
+  background: var(--card-color);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+
+.board-column h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+/* Gig Card */
+.gig-card {
+  background: var(--border-color);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+  transition: box-shadow 0.2s ease, transform 0.1s ease;
+}
+
+.gig-card:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.gig-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gig-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.gig-client {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.gig-desc {
+  font-size: 13px;
+  margin-top: 6px;
+  color: var(--text-secondary);
+}
+
+.gig-meta {
+  text-align: right;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.strong {
+  display: block;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.gig-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+/* Buttons */
+.btn {
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-color);
+  background: var(--accent-color);
+  cursor: pointer;
+}
+
+.milestone-btn {
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--milestone-button);
+  background: var(--milestone-button);
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--accent-color-hover);
+}
+
+.milestone-btn:hover {
+  background: var(--milestone-button-hover);
+}
+
+.btn-secondary {
+  font-size: 11px;
+  color: #393939;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--text-secondary);
+  background: var(--text-secondary);
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: var(--text);
+  border: 1px solid var(--text);
+}
+
+.btn-danger {
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-color-red);
+  background: var(--accent-color-red);
+  cursor: pointer;
+}
+
+.btn-danger:hover {
+  background: var(--accent-color-red-hover);
+}
+
+/* Milestones */
+.milestones {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.milestone {
+  background: var(--accent-color);
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.milestone-title {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.milestone-desc {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.milestone-meta {
+  font-size: 11px;
+  color: #bec8db;
+  margin-top: 3px;
+}
+
+.milestone-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ===============================
+   DARK MODAL SHELL
+   Matches TransactionForm Theme
+================================ */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: #1e1e1e;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  padding: 1.75rem;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: var(--text-primary);
+}
+
+/* Inputs */
+
+.modal input,
+.modal textarea,
+.modal select {
+  background: #262626;
+  border: 1px solid #333;
+  color: #e5e7eb;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+}
+
+.modal input::placeholder,
+.modal textarea::placeholder {
+  color: #9ca3af;
+}
+
+.modal input:focus,
+.modal textarea:focus,
+.modal select:focus {
+  outline: none;
+  border-color: #16a34a;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+}
+
+.modal textarea {
+  resize: none;
+}
+
+/* Grid for 3 inputs */
+.modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+/* Footer buttons */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+/* Primary action button */
+.btn-primary {
+  background: #15803d;
+  border: none;
+  color: white;
+  padding: 12px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: #166534;
+}
+
+.error {
+  color: var(--danger);
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+/* File: src/components/TransactionForm.css */
+
+.txn-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.txn-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.txn-form-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* --- Input Fields --- */
+.txn-form-group input[type="number"],
+.txn-form-group input[type="text"] {
+  background-color: #2a2a2a;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.txn-form-group input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+
+/* --- Type Toggle --- */
+.txn-type-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.txn-type-toggle button {
+  background-color: transparent;
+  border: none;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.txn-type-toggle button:first-child {
+  border-right: 1px solid var(--border-color);
+}
+
+.txn-type-toggle button.active {
+  color: var(--text-primary);
+}
+
+/* Specific toggle colors */
+.txn-type-toggle button.active:first-child { /* Debit */
+  background-color: rgba(244, 67, 54, 0.1);
+  box-shadow: inset 2px 0 0 #F44336;
+  color: #F44336;
+}
+.txn-type-toggle button.active:last-child { /* Credit */
+  background-color: rgba(76, 175, 80, 0.1);
+  box-shadow: inset -2px 0 0 #4CAF50;
+  color: #4CAF50;
+}
+
+/* --- Actions & Error --- */
+.txn-form-actions {
+  margin-top: 0.5rem;
+}
+
+.txn-submit-btn {
+  width: 100%;
+  background-color: var(--accent-color);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.85rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px; /* Fixed height for spinner */
+}
+
+.txn-submit-btn:hover:not(:disabled) {
+  background-color: #3a80d2;
+}
+
+.txn-submit-btn:disabled {
+  background-color: #2a2a2a;
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.txn-form-error {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #F44336;
+  border: 1px solid #F44336;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* Smaller spinner */
+.auth-spinner.small {
+  width: 20px;
+  height: 20px;
+  border-top-color: var(--text-secondary);
+}

@@ -152,7 +152,7 @@ const CardNav = ({
           </div>
 
           <div className="logo-container">
-            <Link to="/">
+            <Link to="/dashboard">
               <img src={logo} alt={logoAlt} className="logo" />
             </Link>
           </div>

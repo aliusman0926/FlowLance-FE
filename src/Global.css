@@ -11,6 +11,9 @@
   --text-primary: #f0f0f0;
   --text-secondary: #aaaaaa;
   --accent-color: #0a7140;
+  --accent-color-hover: #0c8a48;
+  --accent-color-red: #923511;
+  --accent-color-red-hover: #b33a14;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
