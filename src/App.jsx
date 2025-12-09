@@ -12,6 +12,7 @@ import CardNav from './components/CardNav';
 import logo from './assets/logo.svg';
 import TransactionDashboard from './components/TransactionDashboard';
 import GigBoard from './components/GigBoard';
+import CalendarPage from './components/CalendarPage';
 
 // Import Global CSS
 import './Global.css';
@@ -101,7 +102,7 @@ const items = [
       textColor: "var(--text-primary)",
       links: [
         { label: "Gigs", href: '/gigs' },
-        { label: "Case Studies", ariaLabel: "Project Case Studies" }
+        { label: "Calendar", href: '/calendar' }
       ]
     },
     {
@@ -254,6 +255,10 @@ function App() {
         <Route 
           path="/gigs" 
           element={<GigBoard />}
+        />
+        <Route 
+          path="/calendar" 
+          element={<CalendarPage />}
         />
         {/* When we add more pages, they go here:
           <Route path="/transactions" element={<TransactionsPage />} />

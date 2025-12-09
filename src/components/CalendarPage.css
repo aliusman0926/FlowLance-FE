@@ -1,0 +1,417 @@
+/* MilestoneCalendar.css
+   Theme matched to GigBoard.css with calendar-specific tweaks
+*/
+
+:root {
+  --bg: var(--bg-color);
+  --card: var(--card-color);
+  --border: var(--border-color);
+  --text-primary: var(--text-primary);
+  --text-secondary: var(--text-secondary);
+  --muted: #b1b4bc;
+  --primary: #4f46e5;
+  --danger: #dc2626;
+  --radius: 10px;
+  --milestone-button: #13623c;
+  --milestone-button-hover: #065a30;
+}
+
+/* Base page */
+.calendar-page {
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--text-primary);
+  margin-left: 40px;
+  margin-right: 50px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  margin-top: 12px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Buttons */
+.btn {
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-color);
+  background: var(--accent-color);
+  cursor: pointer;
+}
+
+.milestone-btn {
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--milestone-button);
+  background: var(--milestone-button);
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--accent-color-hover);
+}
+
+.milestone-btn:hover {
+  background: var(--milestone-button-hover);
+}
+
+.btn-secondary {
+  font-size: 11px;
+  color: #393939;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--text-secondary);
+  background: var(--text-secondary);
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: var(--text);
+  border: 1px solid var(--text);
+}
+
+.btn-danger {
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-color-red);
+  background: var(--accent-color-red);
+  cursor: pointer;
+}
+
+.btn-danger:hover {
+  background: var(--accent-color-red-hover);
+}
+
+.btn-close {
+  font-size: 20px;
+  color: var(--text-primary);
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+}
+
+.btn-close:hover {
+  background: var(--border-color);
+}
+
+/* Primary action button */
+.btn-primary {
+  background: #15803d;
+  border: none;
+  color: white;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: #166534;
+}
+
+/* Layout */
+.calendar-layout {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Card styles */
+.calendar-card, .panel-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 6px 20px rgba(16,24,40,0.04);
+  border: 1px solid var(--border);
+}
+
+.panel-card {
+  min-height: 340px;
+  max-height: fit-content;
+  grid-column: span 1;
+  max-width: fit-content;
+}
+
+.calendar-card {
+  grid-column: span 3;
+  max-width: 700px;
+  justify-content: center;
+  align-items: center;
+  justify-items: center;
+}
+
+/* Calendar overrides */
+.react-calendar {
+  background: #111 !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 12px !important;
+  color: #fff !important;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.45) !important;
+  padding: 10px !important;
+}
+
+.panel-card h2 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.muted { color: var(--text-secondary); }
+
+.milestone-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  background: var(--card-color);
+}
+
+.milestone-main {
+  flex: 1;
+}
+
+.milestone-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.milestone-desc {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.milestone-meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Milestone action buttons */
+.milestone-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ===============================
+   Modal (reused theme from GigBoard)
+   Dark modal shell
+================================= */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+
+.modal {
+  background-color: #1e1e1e;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 640px;
+  padding: 1.5rem;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
+  color: #e5e7eb;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.modal-header h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal-close, .btn-close {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+/* Inputs */
+.modal input, .modal textarea, .modal select {
+  background: #262626;
+  border: 1px solid #333;
+  color: #e5e7eb;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  width: 100%;
+}
+
+.modal input::placeholder, .modal textarea::placeholder { color: #9ca3af; }
+
+.modal input:focus, .modal textarea:focus, .modal select:focus {
+  outline: none;
+  border-color: #16a34a;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.12);
+}
+
+.modal textarea { resize: none; min-height: 80px; }
+
+/* Grid for inputs */
+.modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Footer actions within modal */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* Transaction / Form styles reused */
+.txn-form { display: flex; flex-direction: column; gap: 12px; }
+.txn-form-group { display: flex; flex-direction: column; gap: 8px; }
+.txn-form-group label { color: var(--text-secondary); font-weight: 600; }
+
+/* Invoice prompt */
+.invoice-prompt-text { color: var(--text-secondary); font-size: 14px; margin-bottom: 8px; }
+
+/* Small utilities */
+.loading { color: var(--text-secondary); }
+.error { color: var(--danger); }
+
+/* DatePicker small style override */
+.react-datepicker__input-container input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #262626;
+  color: #e5e7eb;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 8px 0;
+}
+
+/* ================================
+   CALENDAR OVERRIDES (NEW)
+================================ */
+
+/* 1. Make all calendar text white */
+.react-calendar,
+.react-calendar * {
+  color: var(--text-primary) !important;
+}
+
+/* Remove default react-calendar borders */
+.react-calendar {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Remove tile (date cell) default backgrounds */
+.react-calendar__tile {
+  background: transparent !important;
+  border-radius: 6px !important;
+  color: var(--text-primary) !important;
+}
+
+/* 2. Hover effect — gray background */
+.react-calendar__tile:hover {
+  background: #3a3a3a !important;
+  color: white !important;
+}
+
+/* 3. Selected date (full green fill) */
+.react-calendar__tile--active {
+  background: var(--accent-color) !important; /* dark green */
+  color: white !important;
+  border-radius: 6px !important;
+  border: none !important;
+}
+
+.react-calendar__tile--active:hover {
+  background: var(--accent-color) !important; /* dark green */
+}
+
+/* 4. Today's date — white outline only */
+.react-calendar__tile--now {
+  background: transparent !important;
+  border: 2px solid var(--text-secondary) !important;
+  color: white !important;
+  border-radius: 6px !important;
+}
+
+/* Remove yellow highlight react-calendar applies internally */
+.react-calendar__tile--now:enabled:hover {
+  background: #3a3a3a !important;
+}
+
+/* 5. Highlighted milestones — green border, square outline, green text */
+.milestone-day {
+  background: transparent !important;
+  border: 2px solid var(--accent-color) !important; /* green outline */
+  color: var(--accent-color) !important; /* green text */
+  border-radius: 6px !important;
+  font-weight: 700 !important;
+}
+
+/* On hover, still show the gray hover but keep green text */
+.milestone-day:hover {
+  background: #3a3a3a !important;
+  color: var(--accent-color) !important;
+}
+
+/* 6. Disable react-calendar’s default active style on milestone days */
+.milestone-day.react-calendar__tile--active {
+  background: var(--accent-color) !important; /* full green fill for selected */
+  border: 2px solid var(--accent-color) !important; /* green outline */
+  border: none !important;
+  color: white !important;
+}
+
+/* 7. Calendar weekday labels white */
+.react-calendar__month-view__weekdays__weekday {
+  color: #ffffff !important;
+  font-weight: 600;
+}
