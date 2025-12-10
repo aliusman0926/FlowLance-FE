@@ -14,6 +14,7 @@ import TransactionDashboard from './components/TransactionDashboard';
 import GigBoard from './components/GigBoard';
 import CalendarPage from './components/CalendarPage';
 import SummaryDashboard from './components/SummaryDashboard';
+import ExpenseSummary from './components/ExpenseSummary';
 
 // Import Global CSS
 import './Global.css';
@@ -94,7 +95,7 @@ const items = [
       textColor: "var(--text-primary)",
       links: [
         { label: "Transactions", href: '/transactions' },
-        { label: "Tax Report", ariaLabel: "Tax Report" }
+        { label: "AI Analytics", href: '/expense-summary' }
       ]
     },
     {
@@ -260,6 +261,10 @@ function App() {
         <Route 
           path="/calendar" 
           element={<CalendarPage />}
+        />
+        <Route 
+          path="/expense-summary" 
+          element={<ExpenseSummary />}
         />
         {/* When we add more pages, they go here:
           <Route path="/transactions" element={<TransactionsPage />} />

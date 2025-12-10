@@ -1,0 +1,220 @@
+.expense-summary {
+  padding: 2rem 1.5rem 3rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.chart-grid {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  margin-bottom: 1rem;
+}
+
+.chart-card {
+  min-height: 320px;
+}
+
+.chart-shell {
+  height: 240px;
+}
+
+.empty-chart,
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background: var(--card-color);
+  border: 1px dashed var(--border-color);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.total-pill-credit {
+  background: rgba(34, 197, 94, 0.12);
+  color: #bef264;
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.total-pill-debit {
+  background: rgba(202, 83, 83, 0.35);
+  color: #f26464;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.muted-pill {
+  color: var(--text-secondary);
+}
+
+.success-pill {
+  background: rgba(34, 197, 94, 0.12);
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.danger-pill {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.category-card {
+  margin-top: 1rem;
+  gap: 1.25rem;
+}
+
+.transaction-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.transaction-column {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.01);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.debit-column {
+  border-color: rgba(239, 68, 68, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 0 0 1px rgba(239, 68, 68, 0.08);
+}
+
+.credit-column {
+  border-color: rgba(68, 239, 108, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 0 0 1px rgba(239, 68, 68, 0.08);
+}
+
+.column-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.category-select {
+  background: var(--card-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 0.55rem 0.75rem;
+  font-weight: 600;
+}
+
+.category-select:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.45);
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.category-group {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem 1rem 0.75rem;
+  background: rgba(255, 255, 255, 0.01);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.debit-group {
+  border-color: rgba(239, 68, 68, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 0 0 1px rgba(239, 68, 68, 0.08);
+}
+
+.credit-group {
+  border-color: rgba(68, 239, 108, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 0 0 1px rgba(239, 68, 68, 0.08);
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.category-totals {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.transaction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.transaction-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.transaction-row:first-child {
+  border-top: none;
+}
+
+.txn-title {
+  font-weight: 600;
+}
+
+.txn-sub {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.txn-amount {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.txn-amount.positive {
+  color: #86efac;
+}
+
+.txn-amount.negative {
+  color: #fca5a5;
+}
+
+@media (max-width: 768px) {
+  .category-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .category-totals {
+    width: 100%;
+  }
+
+  .transaction-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .txn-amount {
+    width: 100%;
+    text-align: right;
+  }
+}
