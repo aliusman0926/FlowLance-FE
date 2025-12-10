@@ -413,7 +413,7 @@ function TransactionDashboard() {
               type="file"
               accept=".csv"
               hidden
-              onChange={uploadCSVHandler}
+              onChange={(e) => uploadCSVHandler(e.target.files[0])}
             />
           </label>
         </BentoBox>
