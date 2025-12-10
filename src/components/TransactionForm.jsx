@@ -55,13 +55,17 @@ function TransactionForm({ onSubmit, onComplete, initialData, loading }) {
 
     // Calculate tax based on the amount
     const tax = (parsedAmount * TAX_RATE_PERCENTAGE) / 100;
-    
     const transactionData = {
       ...formData,
       amount: parsedAmount,
       tax: tax,
       taxPercentage: TAX_RATE_PERCENTAGE,
     };
+
+    if (formData.type === 'debit') {
+      transactionData.tax = 0;
+      transactionData.taxPercentage = 0;
+    }
 
     // The onSubmit prop will be an async function that handles the API call
     try {

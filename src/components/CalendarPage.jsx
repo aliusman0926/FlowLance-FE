@@ -309,15 +309,15 @@ export default function CalendarPage() {
             </div>
 
             <div className="txn-form">
-              <p className="invoice-prompt-text">Enter names to include on the invoice (optional — defaults will be used).</p>
+              <p className="invoice-prompt-text">Enter official names to include on the invoice.</p>
 
               <div className="txn-form-group">
-                <label>Client Name</label>
+                <label>Client Name*</label>
                 <input type="text" placeholder="Client Name" value={invoiceModal.clientName} onChange={(e) => setInvoiceModal((p) => ({ ...p, clientName: e.target.value }))} />
               </div>
 
               <div className="txn-form-group">
-                <label>Freelancer Name</label>
+                <label>Freelancer Name*</label>
                 <input type="text" placeholder="Freelancer Name" value={invoiceModal.freelancerName} onChange={(e) => setInvoiceModal((p) => ({ ...p, freelancerName: e.target.value }))} />
               </div>
 

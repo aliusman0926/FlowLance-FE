@@ -193,6 +193,7 @@ export default function GigBoard() {
     try {
       const created = await API.createMilestone(gigId, payload);
       setMilestones(prev => ({ ...prev, [gigId]: [...(prev[gigId]||[]), created] }));
+      await loadGigs(); // refresh gig totals
       closeModal();
     } catch (err) {
       alert('Error creating milestone: ' + (err.message || JSON.stringify(err)));
@@ -428,13 +429,36 @@ export default function GigBoard() {
                   <textarea placeholder="Description" value={formData.description||''} onChange={e=>setFormData({...formData, description: e.target.value})} />
                   <div className="modal-grid">
                     <input className="p-2 border rounded" placeholder="Client Name" value={formData.clientName||''} onChange={e=>setFormData({...formData, clientName: e.target.value})} />
-                    <input className="p-2 border rounded" placeholder="Total Value" type="number" value={formData.totalValue||0} onChange={e=>setFormData({...formData, totalValue: Number(e.target.value)})} />
                     <select className="p-2 border rounded" value={formData.status||'Open'} onChange={e=>setFormData({...formData, status: e.target.value})}>
                       <option>Open</option>
                       <option>In Progress</option>
                       <option>Completed</option>
                       <option>Archived</option>
                     </select>
+                    <DatePicker
+                        selected={
+                            modalType === "addGig"
+                            ? formData.startDate
+                                ? new Date(formData.startDate)
+                                : null
+                            : formData.dueDate
+                            ? new Date(formData.dueDate)
+                            : null
+                        }
+                        onChange={(date) => {
+                            const v = date ? date.toISOString().split("T")[0] : "";
+                            setFormData({
+                                ...formData,
+                                startDate: v,
+                            });                           
+                        }}
+                        placeholderText="Start Date"
+                        dateFormat="MMM d, yyyy"
+                        className="date-pill"
+                        calendarClassName="dark-calendar"
+                        popperClassName="calendar-popper"
+                        showPopperArrow={false}
+                    />
                   </div>
                 </div>
               )}
@@ -452,7 +476,7 @@ export default function GigBoard() {
                   }} />
 
                   <div className="modal-grid">
-                    <input className="p-2 border rounded" placeholder="Payment Amount" type="number" value={(modalType==='editMilestone' ? (formData.milestone?.paymentAmount) : formData.paymentAmount) || 0} onChange={e=>{
+                    <input className="p-2 border rounded" placeholder="Payment Amount" type="number" value={(modalType==='editMilestone' ? (formData.milestone?.paymentAmount) : formData.paymentAmount) } onChange={e=>{
                       const val = Number(e.target.value);
                       if (modalType==='editMilestone') setFormData({...formData, milestone: {...formData.milestone, paymentAmount: val}});
                       else setFormData({...formData, paymentAmount: val});
@@ -467,7 +491,41 @@ export default function GigBoard() {
                       <option>Blocked</option>
                       <option>Done</option>
                     </select>
+                    <DatePicker
+                        selected={
+                            modalType === "editMilestone"
+                            ? formData.milestone?.startDate
+                                ? new Date(formData.milestone.startDate)
+                                : null
+                            : formData.startDate
+                            ? new Date(formData.startDate)
+                            : null
+                        }
+                        onChange={(date) => {
+                            const v = date ? date.toISOString().split("T")[0] : "";
 
+                            if (modalType === "editMilestone") {
+                            setFormData({
+                                ...formData,
+                                milestone: {
+                                ...formData.milestone,
+                                startDate: v,
+                                },
+                            });
+                            } else {
+                            setFormData({
+                                ...formData,
+                                startDate: v,
+                            });
+                            }
+                        }}
+                        placeholderText="Start Date"
+                        dateFormat="MMM d, yyyy"
+                        className="date-pill"
+                        calendarClassName="dark-calendar"
+                        popperClassName="calendar-popper"
+                        showPopperArrow={false}
+                    />
                     <DatePicker
                         selected={
                             modalType === "editMilestone"
@@ -529,7 +587,7 @@ export default function GigBoard() {
 
             <input
               type="text"
-              placeholder="Client Name"
+              placeholder="Client Name*"
               value={invoicePrompt.clientName}
               className="invoice-prompt-text"
               onChange={(e) =>
@@ -540,7 +598,7 @@ export default function GigBoard() {
 
             <input
               type="text"
-              placeholder="Freelancer Name"
+              placeholder="Freelancer Name*"
               value={invoicePrompt.freelancerName}
               className="invoice-prompt-text"
               onChange={(e) =>
