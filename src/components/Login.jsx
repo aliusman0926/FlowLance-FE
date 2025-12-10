@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import GoogleAuth from './GoogleAuth'; // This path is correct based on our assumed structure
-import './Auth.css'; // This path is correct based on our assumed structure
+import GoogleAuth from './GoogleAuth'; 
+import './Auth.css'; 
+
+// Import the logo
+import Logo from '../assets/logo.svg';
 
 // Set the base URL for your API
 const API_BASE_URL = 'http://localhost:3000/api';
@@ -25,11 +28,7 @@ function Login({ onLogin }) {
         password 
       });
       
-      // Pass the token and user data to the main App
-      // This was already correct and matches our plan
       onLogin(res.data.token, res.data.user);
-      
-      // Navigate to the main dashboard
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
@@ -40,6 +39,9 @@ function Login({ onLogin }) {
 
   return (
     <div className="auth-container">
+      {/* Logo is placed outside the card, centered by the container's flex rules */}
+      <img src={Logo} alt="Company Logo" className="auth-logo" />
+
       <div className="auth-card">
         <h2 className="auth-title">Welcome Back</h2>
         <p className="auth-subtitle">Sign in to continue</p>
