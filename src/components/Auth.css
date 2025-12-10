@@ -1,5 +1,5 @@
 /* File: src/components/Auth.css
-  Description: Minimal, sleek, and professional styling for auth components.
+   Description: Minimal, sleek, and professional styling for auth components.
 */
 
 :root {
@@ -17,14 +17,23 @@
 
 .auth-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column; /* CHANGED: Stacks logo and card vertically */
+  align-items: center;    /* Centers items horizontally */
+  justify-content: center; /* Centers items vertically on screen */
   min-height: 100vh;
   width: 100%;
   background-color: var(--bg-color);
   font-family: var(--font-sans);
   color: var(--text-primary);
   padding: 1rem;
+}
+
+/* Updated Logo Styles */
+.auth-logo {
+  height: 80px; /* Increased slightly for better visibility outside card */
+  width: auto;
+  margin-bottom: 2rem; /* Adds space between logo and card */
+  display: block;
 }
 
 .auth-card {
