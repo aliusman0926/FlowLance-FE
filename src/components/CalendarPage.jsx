@@ -224,14 +224,16 @@ export default function CalendarPage() {
 
   return (
     <div className="calendar-page">
-      <header className="calendar-header">
-        <h1 className="page-title">Milestone Calendar</h1>
-        <div className="header-actions">
-          <button className="btn-secondary" onClick={() => window.location.reload()}>
-            <TbRefresh />
-          </button>
-        </div>
-      </header>
+      <div className="dashboard-hero">
+              <div>
+                <p className="eyebrow">Milestone overview</p>
+                <h1>Upcoming Deliverables</h1>
+                <p className="subtext">See what milestones are due soon to keep your work organised.</p>
+              </div>
+              <button className="ghost-button" onClick={() => window.location.reload()} disabled={loading}>
+                {loading ? 'Refreshing…' : <TbRefresh />}
+              </button>
+      </div>
 
       {error && <div className="error">{error}</div>}
       {loading ? (

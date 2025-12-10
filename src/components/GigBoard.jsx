@@ -321,13 +321,19 @@ export default function GigBoard() {
 
   return (
     <div className="gig-board">
-      <header className="gig-board-header">
-        <h1></h1>
-        <div className="header-actions">
-          <button className="btn" onClick={()=>openModal('addGig')}>+ New Gig</button>
-          <button className="btn-secondary" onClick={loadGigs}><TbRefresh /></button>
-        </div>
-      </header>
+      <div className="dashboard-hero">
+                    <div>
+                      <p className="eyebrow">Gigs overview</p>
+                      <h1>Project Management</h1>
+                      <p className="subtext">Manage all ongoing and upcoming gigs and milestones.</p>
+                    </div>
+                    <div className='header-actions'>
+                    <button className="ghost-button green-bg" onClick={()=>openModal('addGig')}>+ New Gig</button>
+                    <button className="ghost-button" onClick={loadGigs} disabled={loading}>
+                      {loading ? 'Refreshing…' : <TbRefresh />}
+                    </button>
+                    </div>
+      </div>
 
       {error && <div className="text-red-600 mb-4">{error}</div>}
       {loading ? (

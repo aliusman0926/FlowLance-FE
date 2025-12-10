@@ -10,6 +10,7 @@ import DatePicker from "react-datepicker";
 import { FaFileCsv } from "react-icons/fa6";
 import { TbFileTypeCsv } from "react-icons/tb";
 import { PiFileCsvFill } from "react-icons/pi";
+import { TbRefresh } from "react-icons/tb";
 
 // --- API Endpoints ---
 const API_BASE_URL = 'http://localhost:3000/api';
@@ -61,6 +62,7 @@ function TransactionDashboard() {
       ]);
 
       setBalance(balanceRes.data.balance || 0);
+      await loadTransactions(startDate, endDate);
 
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
@@ -331,6 +333,16 @@ function TransactionDashboard() {
 
   return (
     <div className="bento-grid-container">
+      <div className="dashboard-hero">
+              <div>
+                <p className="eyebrow">Transactions overview</p>
+                <h1>Transaction History</h1>
+                <p className="subtext">See your past transactions, import and log new ones, and generate reports.</p>
+              </div>
+              <button className="ghost-button" onClick={fetchData} disabled={loading}>
+                {loading ? 'Refreshing…' : <TbRefresh />}
+              </button>
+      </div>
       {/* --- Currency Filter Header --- */}
       <div className="bento-header">
         <div className="currency-selector-wrapper">

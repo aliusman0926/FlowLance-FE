@@ -153,11 +153,11 @@ function SummaryDashboard({ user }) {
       {error && <div className="summary-error">{error}</div>}
 
       <div className="bento-grid">
-        <div className="bento-card balance-card">
+        <div className="bento-card balance-card clickable-card" onClick={() => navigate('/expense-summary')}>
           <div className="card-head">
             <p className="label">Current balance</p>
             <span className={`badge ${netChange >= 0 ? 'badge-success' : 'badge-danger'}`}>
-              {netChange >= 0 ? '+' : ''}{formatCurrency(netChange)} this period
+              {netChange >= 0 ? '+' : ''}{formatCurrency(netChange)}
             </span>
           </div>
           <h2 className="balance-figure">{formatCurrency(balance)}</h2>

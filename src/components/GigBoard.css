@@ -225,6 +225,10 @@
   color: #bec8db;
 }
 
+.green-bg {
+  background-color: var(--milestone-button-hover);
+}
+
 .milestone-actions {
   display: flex;
   flex-direction: column;
