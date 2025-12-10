@@ -4,10 +4,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import GoogleAuth from './GoogleAuth'; // This path is correct
 import './Auth.css'; // This path is correct
 
+// 1. Import the logo
+import Logo from '../assets/logo.svg';
+
 // Set the base URL for your API
 const API_BASE_URL = 'http://localhost:3000/api';
 
-// *** FIX 1: Added onLogin prop ***
 function Register({ onLogin }) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -45,6 +47,9 @@ function Register({ onLogin }) {
 
   return (
     <div className="auth-container">
+      {/* 2. Logo added here, centered above the card by CSS */}
+      <img src={Logo} alt="Company Logo" className="auth-logo" />
+
       <div className="auth-card">
         <h2 className="auth-title">Create Account</h2>
         <p className="auth-subtitle">Get started with a free account</p>
@@ -102,7 +107,6 @@ function Register({ onLogin }) {
           <span>OR</span>
         </div>
         
-        {/* *** FIX 2: Pass onLogin prop to GoogleAuth *** */}
         <GoogleAuth onLogin={onLogin} />
         
         <p className="auth-toggle">
