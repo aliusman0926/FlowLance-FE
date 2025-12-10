@@ -291,6 +291,11 @@ export default function GigBoard() {
 
   const generateInvoice = async (milestoneId, clientName, freelancerName) => {
     try {
+      if ( clientName == null || freelancerName == null || clientName.trim() === '' || freelancerName.trim() === '' ) {
+        alert('Please provide both client and freelancer names to generate invoice.');
+        return;
+      }
+
       const params = new URLSearchParams({
         clientName,
         freelancerName
@@ -631,7 +636,7 @@ export default function GigBoard() {
                     invoicePrompt.clientName,
                     invoicePrompt.freelancerName
                   );
-                  setInvoicePrompt({ open: false, milestoneId: null, clientName: '', freelancerName: '' });
+                  setInvoicePrompt({ open: false, milestoneId: null, clientName: null, freelancerName: null });
                 }}
               >
                 Generate Invoice
