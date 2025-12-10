@@ -188,7 +188,7 @@ function ExpenseSummary() {
       <div className="dashboard-hero">
         <div>
           <p className="eyebrow">Spending overview</p>
-          <h1>AI Analytics</h1>
+          <h1>Expense Summary</h1>
           <p className="subtext">See how your credits and debits break down across categories.</p>
         </div>
         <button className="ghost-button" onClick={loadTransactions} disabled={loading}>

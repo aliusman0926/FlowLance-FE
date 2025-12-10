@@ -95,7 +95,7 @@ const items = [
       textColor: "var(--text-primary)",
       links: [
         { label: "Transactions", href: '/transactions' },
-        { label: "AI Analytics", href: '/expense-summary' }
+        { label: "Expense Summary", href: '/expense-summary' }
       ]
     },
     {
