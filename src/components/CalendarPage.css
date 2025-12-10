@@ -415,3 +415,10 @@ hr {
   color: #ffffff !important;
   font-weight: 600;
 }
+
+/* 7. Calendar weekday labels white */
+.react-calendar__navigation button:hover,
+.react-calendar__navigation__label:hover {
+  border-radius: 6px !important;
+  background: #3a3a3a !important;
+}

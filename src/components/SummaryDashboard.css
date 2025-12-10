@@ -1,0 +1,312 @@
+.summary-dashboard {
+  padding: 2rem 1.5rem 3rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.dashboard-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  margin-bottom: 0.2rem;
+}
+
+.dashboard-hero h1 {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 700;
+}
+
+.subtext {
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.ghost-button {
+  border: 1px solid var(--border-color);
+  background: var(--card-color);
+  color: var(--text-primary);
+  padding: 0.65rem 1.1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ghost-button:hover:not(:disabled) {
+  border-color: var(--accent-color);
+  color: var(--text-primary);
+}
+
+.ghost-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.summary-error {
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(255, 99, 132, 0.4);
+  background: rgba(255, 99, 132, 0.08);
+  color: #ff9da7;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.bento-card {
+  background: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.label {
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.78rem;
+}
+
+.badge {
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  border: 1px solid var(--border-color);
+}
+
+.badge-success {
+  color: #9be7a5;
+  background: rgba(43, 160, 96, 0.15);
+  border-color: rgba(43, 160, 96, 0.3);
+}
+
+.badge-danger {
+  color: #f8b4b4;
+  background: rgba(220, 53, 69, 0.15);
+  border-color: rgba(220, 53, 69, 0.35);
+}
+
+.balance-card {
+  grid-column: span 2;
+  min-height: 220px;
+}
+
+.balance-figure {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 700;
+  margin-top: 0.5rem;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-top: auto;
+}
+
+.stat-pill {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.stat-pill-positive {
+  border-color: rgba(43, 160, 96, 0.35);
+  background: rgba(43, 160, 96, 0.08);
+}
+
+.stat-pill-muted {
+  border-color: rgba(160, 43, 43, 0.35);
+  background: rgba(160, 43, 43, 0.08);
+}
+
+.stat-pill-accent {
+  border-color: rgba(113, 108, 10, 0.5);
+  background: rgba(113, 106, 10, 0.12);
+}
+
+.pill-label {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.pill-value {
+  font-weight: 700;
+  margin-top: 0.15rem;
+}
+
+.gig-health {
+    grid-column: span 2;
+}
+
+.gig-health .gig-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.gig-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid var(--border-color);
+  padding: 0.65rem;
+  border-radius: 12px;
+}
+
+.pill-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--accent-color);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pill-dot.status-open {
+  background: #57d6a0;
+}
+
+.pill-dot.status-progress {
+  background: #ffd166;
+}
+
+.pill-dot.status-completed {
+  background: var(--accent-color);
+}
+
+.pill-dot.status-archived {
+  background: var(--accent-color-red);
+}
+
+.pill-dot.status-default {
+  background: var(--text-secondary);
+}
+
+.milestones-card .milestone-list,
+.transactions-card .txn-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.milestone-row,
+.txn-row,
+.insight-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.milestone-title,
+.txn-title {
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.milestone-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.chip {
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  border: 1px solid var(--border-color);
+  text-transform: capitalize;
+}
+
+.chip-success {
+  color: #9be7a5;
+  background: rgba(43, 160, 96, 0.12);
+  border-color: rgba(43, 160, 96, 0.4);
+}
+
+.chip-warning {
+  color: #ffd580;
+  background: rgba(255, 215, 128, 0.12);
+  border-color: rgba(255, 215, 128, 0.4);
+}
+
+.chip-danger {
+  color: #f8b4b4;
+  background: rgba(248, 180, 180, 0.12);
+  border-color: rgba(248, 180, 180, 0.4);
+}
+
+.txn-info {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.txn-amount {
+  font-weight: 700;
+}
+
+.txn-amount.credit {
+  color: #9be7a5;
+}
+
+.txn-amount.debit {
+  color: #f8b4b4;
+}
+
+.insights-card .insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.transactions-card {
+  grid-column: span 2;
+}
+
+.milestones-card {
+  grid-column: span 2;
+}
+
+@media (max-width: 900px) {
+  .balance-card,
+  .gig-health,
+  .transactions-card,
+  .milestones-card {
+    grid-column: span 1;
+  }
+}

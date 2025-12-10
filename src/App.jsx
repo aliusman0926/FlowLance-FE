@@ -13,6 +13,7 @@ import logo from './assets/logo.svg';
 import TransactionDashboard from './components/TransactionDashboard';
 import GigBoard from './components/GigBoard';
 import CalendarPage from './components/CalendarPage';
+import SummaryDashboard from './components/SummaryDashboard';
 
 // Import Global CSS
 import './Global.css';
@@ -246,7 +247,7 @@ function App() {
         {/* All protected routes go inside here */}
         <Route 
           path="/dashboard" 
-          element={<Dashboard user={auth.user} />} 
+          element={<SummaryDashboard user={auth.user} />} 
         />
         <Route 
           path="/transactions" 
