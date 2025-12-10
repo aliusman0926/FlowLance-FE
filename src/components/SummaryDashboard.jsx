@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // 1. Import hook
 import axios from 'axios';
 import './SummaryDashboard.css';
 import { TbRefresh } from "react-icons/tb";
@@ -24,6 +25,9 @@ function StatPill({ label, value, tone = 'neutral' }) {
 }
 
 function SummaryDashboard({ user }) {
+  // 2. Initialize navigation
+  const navigate = useNavigate();
+
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const headers = useMemo(() => ({
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -131,36 +135,6 @@ function SummaryDashboard({ user }) {
     }, defaults);
   }, [gigs]);
 
-  const topGigs = useMemo(() => {
-    const earningsByGig = gigs.map((gig) => {
-      const total = (milestones[gig._id] || []).reduce((sum, m) => sum + Number(m.paymentAmount || 0), 0);
-      return {
-        id: gig._id,
-        title: gig.title || 'Untitled gig',
-        client: gig.clientName || 'Client',
-        total,
-      };
-    });
-
-    return earningsByGig
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 3);
-  }, [gigs, milestones]);
-
-  const topClients = useMemo(() => {
-    const clientTotals = {};
-
-    transactions.forEach((t) => {
-      const name = t.counterparty || t.clientName || 'Client';
-      clientTotals[name] = (clientTotals[name] || 0) + Number(t.amount || 0);
-    });
-
-    return Object.entries(clientTotals)
-      .map(([name, total]) => ({ name, total }))
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 3);
-  }, [transactions]);
-
   const latestTransactions = transactions.slice(0, 6);
 
   return (
@@ -194,10 +168,14 @@ function SummaryDashboard({ user }) {
           </div>
         </div>
 
-        <div className="bento-card gig-health">
+        {/* 3. Add onClick to Gig Pipeline */}
+        <div 
+          className="bento-card gig-health clickable-card" 
+          onClick={() => navigate('/gigs')}
+        >
           <div className="card-head">
             <p className="label">Gig pipeline</p>
-            <p className="muted">Open → Completed</p>
+            <p className="muted">Open → Completed &rarr;</p> {/* Added arrow hint */}
           </div>
           <div className="gig-stats">
             {Object.entries(gigStatusCounts).map(([status, count]) => (
@@ -217,10 +195,14 @@ function SummaryDashboard({ user }) {
           </div>
         </div>
 
-        <div className="bento-card milestones-card">
+        {/* 4. Add onClick to Milestones */}
+        <div 
+          className="bento-card milestones-card clickable-card" 
+          onClick={() => navigate('/calendar')}
+        >
           <div className="card-head">
             <p className="label">Upcoming milestones</p>
-            <p className="muted">Next due items</p>
+            <p className="muted">Next due items &rarr;</p>
           </div>
           <div className="milestone-list">
             {upcomingMilestones.length === 0 ? (
@@ -245,10 +227,14 @@ function SummaryDashboard({ user }) {
           </div>
         </div>
 
-        <div className="bento-card transactions-card">
+        {/* 5. Add onClick to Transactions */}
+        <div 
+          className="bento-card transactions-card clickable-card" 
+          onClick={() => navigate('/transactions')}
+        >
           <div className="card-head">
             <p className="label">Latest transactions</p>
-            <p className="muted">Recent activity</p>
+            <p className="muted">Recent activity &rarr;</p>
           </div>
           <div className="txn-list">
             {latestTransactions.length === 0 ? (
@@ -273,44 +259,6 @@ function SummaryDashboard({ user }) {
             )}
           </div>
         </div>
-
-        {/* <div className="bento-card insights-card">
-          <div className="card-head">
-            <p className="label">Top performers</p>
-            <p className="muted">Gigs and clients</p>
-          </div>
-          <div className="insights-grid">
-            <div>
-              <p className="pill-label">Top gigs</p>
-              {topGigs.length === 0 ? (
-                <p className="muted">No gigs yet.</p>
-              ) : (
-                topGigs.map((gig) => (
-                  <div className="insight-row" key={gig.id}>
-                    <div>
-                      <p className="milestone-title">{gig.title}</p>
-                      <p className="muted">{gig.client}</p>
-                    </div>
-                    <p className="pill-value">{formatCurrency(gig.total)}</p>
-                  </div>
-                ))
-              )}
-            </div>
-            <div>
-              <p className="pill-label">Top clients</p>
-              {topClients.length === 0 ? (
-                <p className="muted">Waiting for transactions.</p>
-              ) : (
-                topClients.map((client) => (
-                  <div className="insight-row" key={client.name}>
-                    <p className="milestone-title">{client.name}</p>
-                    <p className="pill-value">{formatCurrency(client.total)}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div> */}
       </div>
     </div>
   );
