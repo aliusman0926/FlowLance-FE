@@ -25,22 +25,6 @@ import { useDroppable } from "@dnd-kit/core";
 
 
 // GigBoard.jsx
-// Single-file React component (default export) that implements a minimal, modern, Jira-like
-// gig management board. Uses TailwindCSS classes for styling.
-// Expectations:
-// - An auth token should be available at localStorage.getItem('token') and will be sent as
-//   Authorization: Bearer <token> for protected backend routes.
-// - Backend routes used:
-//    GET  /api/gigs/user
-//    POST /api/gigs
-//    PUT  /api/gigs/:id
-//    DELETE /api/gigs/:id
-//    GET  /api/milestones/gig/:gigId
-//    POST /api/milestones/gig/:gigId
-//    PUT  /api/milestones/:id
-//    DELETE /api/milestones/:id
-// - This file is purposely a single component file for easy copy-paste into a project.
-
 export default function GigBoard() {
   const [gigs, setGigs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -284,8 +268,6 @@ export default function GigBoard() {
 
   const getBackendBaseUrl = () => {
     const { protocol, hostname } = window.location;
-
-    // Assumes backend runs on same host but different port (common setup)
     return `${protocol}//${hostname}:3000/api`;
   };
 
@@ -429,8 +411,39 @@ export default function GigBoard() {
               e.preventDefault();
               if (modalType === 'addGig') return handleAddGig(formData);
               if (modalType === 'editGig') return handleUpdateGig(formData._id, formData);
-              if (modalType === 'addMilestone') return handleAddMilestone(formData.gigId, formData);
-              if (modalType === 'editMilestone') return handleUpdateMilestone(formData.gigId, formData.milestone._id, { ...formData.milestone, ...formData });
+              
+              // --- VALIDATION LOGIC START ---
+              if (modalType === 'addMilestone') {
+                  if (Number(formData.paymentAmount) < 0) {
+                      alert("Payment amount cannot be negative.");
+                      return;
+                  }
+                  // Date Validation
+                  if (formData.startDate && formData.dueDate) {
+                      if (new Date(formData.dueDate) < new Date(formData.startDate)) {
+                          alert("Due Date cannot be before Start Date.");
+                          return;
+                      }
+                  }
+                  return handleAddMilestone(formData.gigId, formData);
+              }
+              if (modalType === 'editMilestone') {
+                  if (Number(formData.milestone?.paymentAmount) < 0) {
+                      alert("Payment amount cannot be negative.");
+                      return;
+                  }
+                   // Date Validation (Nested state for edit mode)
+                  const start = formData.milestone?.startDate ? new Date(formData.milestone.startDate) : null;
+                  const end = formData.milestone?.dueDate ? new Date(formData.milestone.dueDate) : null;
+                  
+                  if (start && end && end < start) {
+                      alert("Due Date cannot be before Start Date.");
+                      return;
+                  }
+
+                  return handleUpdateMilestone(formData.gigId, formData.milestone._id, { ...formData.milestone, ...formData });
+              }
+              // --- VALIDATION LOGIC END ---
             }}>
 
               {/* Gig fields */}
@@ -487,10 +500,16 @@ export default function GigBoard() {
                   }} />
 
                   <div className="modal-grid">
-                    <input className="p-2 border rounded" placeholder="Payment Amount" type="number" value={(modalType==='editMilestone' ? (formData.milestone?.paymentAmount) : formData.paymentAmount) } onChange={e=>{
-                      const val = Number(e.target.value);
-                      if (modalType==='editMilestone') setFormData({...formData, milestone: {...formData.milestone, paymentAmount: val}});
-                      else setFormData({...formData, paymentAmount: val});
+                    <input 
+                      className="p-2 border rounded" 
+                      placeholder="Payment Amount" 
+                      type="number" 
+                      min="0"
+                      value={(modalType==='editMilestone' ? (formData.milestone?.paymentAmount) : formData.paymentAmount) } 
+                      onChange={e=>{
+                        const val = Number(e.target.value);
+                        if (modalType==='editMilestone') setFormData({...formData, milestone: {...formData.milestone, paymentAmount: val}});
+                        else setFormData({...formData, paymentAmount: val});
                     }} />
 
                     <select className="p-2 border rounded" value={(modalType==='editMilestone' ? (formData.milestone?.status) : formData.status) || 'To Do'} onChange={e=>{
@@ -502,6 +521,8 @@ export default function GigBoard() {
                       <option>Blocked</option>
                       <option>Done</option>
                     </select>
+                    
+                    {/* START DATE PICKER */}
                     <DatePicker
                         selected={
                             modalType === "editMilestone"
@@ -510,6 +531,16 @@ export default function GigBoard() {
                                 : null
                             : formData.startDate
                             ? new Date(formData.startDate)
+                            : null
+                        }
+                        // Added maxDate so you can't pick a start date after the current due date
+                        maxDate={
+                             modalType === "editMilestone"
+                            ? formData.milestone?.dueDate
+                                ? new Date(formData.milestone.dueDate)
+                                : null
+                            : formData.dueDate
+                            ? new Date(formData.dueDate)
                             : null
                         }
                         onChange={(date) => {
@@ -537,6 +568,8 @@ export default function GigBoard() {
                         popperClassName="calendar-popper"
                         showPopperArrow={false}
                     />
+
+                    {/* DUE DATE PICKER */}
                     <DatePicker
                         selected={
                             modalType === "editMilestone"
@@ -545,6 +578,16 @@ export default function GigBoard() {
                                 : null
                             : formData.dueDate
                             ? new Date(formData.dueDate)
+                            : null
+                        }
+                        // Added minDate so you can't pick a due date before the start date
+                        minDate={
+                             modalType === "editMilestone"
+                            ? formData.milestone?.startDate
+                                ? new Date(formData.milestone.startDate)
+                                : null
+                            : formData.startDate
+                            ? new Date(formData.startDate)
                             : null
                         }
                         onChange={(date) => {

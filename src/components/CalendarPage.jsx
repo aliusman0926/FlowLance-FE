@@ -182,6 +182,9 @@ export default function CalendarPage() {
       if (payload.dueDate && payload.dueDate instanceof Date) {
         payload.dueDate = payload.dueDate.toISOString();
       }
+      if (payload.startDate && payload.startDate instanceof Date) {
+        payload.startDate = payload.startDate.toISOString();
+      }
       const updated = await API.updateMilestone(milestone._id, payload);
 
       // replace in state
@@ -341,6 +344,9 @@ function EditMilestoneForm({ milestone, onCancel, onSave }) {
   const [description, setDescription] = useState(milestone.description || "");
   const [paymentAmount, setPaymentAmount] = useState(Number(milestone.paymentAmount || 0));
   const [status, setStatus] = useState(milestone.status || "To Do");
+  
+  // State for dates
+  const [startDate, setStartDate] = useState(milestone.startDate ? new Date(milestone.startDate) : null);
   const [dueDate, setDueDate] = useState(milestone.dueDate ? new Date(milestone.dueDate) : null);
 
   return (
@@ -353,6 +359,7 @@ function EditMilestoneForm({ milestone, onCancel, onSave }) {
           description,
           paymentAmount,
           status,
+          startDate: startDate ? startDate : null,
           dueDate: dueDate ? dueDate : null,
         });
       }}
@@ -370,7 +377,7 @@ function EditMilestoneForm({ milestone, onCancel, onSave }) {
       <div className="modal-grid">
         <div className="txn-form-group">
           <label>Payment Amount</label>
-          <input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(Number(e.target.value))} />
+          <input type="number" min="0" value={paymentAmount} onChange={(e) => setPaymentAmount(Number(e.target.value))} />
         </div>
 
         <div className="txn-form-group">
@@ -384,9 +391,30 @@ function EditMilestoneForm({ milestone, onCancel, onSave }) {
         </div>
       </div>
 
-      <div className="txn-form-group">
-        <label>Due Date</label>
-        <DatePicker selected={dueDate} onChange={(d) => setDueDate(d)} dateFormat="MMM d, yyyy" placeholderText="Select date" />
+      <div className="modal-grid">
+        <div className="txn-form-group">
+            <label>Start Date</label>
+            <DatePicker 
+                selected={startDate} 
+                onChange={(d) => setStartDate(d)} 
+                maxDate={dueDate} // Constraint: Start date cannot be after due date
+                dateFormat="MMM d, yyyy" 
+                placeholderText="Start date" 
+                className="date-pill"
+            />
+        </div>
+
+        <div className="txn-form-group">
+            <label>Due Date</label>
+            <DatePicker 
+                selected={dueDate} 
+                onChange={(d) => setDueDate(d)} 
+                minDate={startDate} // Constraint: Due date cannot be before start date
+                dateFormat="MMM d, yyyy" 
+                placeholderText="Due date"
+                className="date-pill"
+            />
+        </div>
       </div>
 
       <div className="modal-actions">
