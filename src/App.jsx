@@ -16,6 +16,9 @@ import CalendarPage from './components/CalendarPage';
 import SummaryDashboard from './components/SummaryDashboard';
 import ExpenseSummary from './components/ExpenseSummary';
 
+// Agents Imports
+import ProposalAgent from './components/Agents/ProposalAgent/ProposalAgent';
+
 // Import Global CSS
 import './Global.css';
 
@@ -108,13 +111,11 @@ const items = [
       ]
     },
     {
-      label: "Contact",
+      label: "AI Agents",
       bgColor: "var(--accent-color)", 
       textColor: "var(--text-primary)",
       links: [
-        { label: "Email", ariaLabel: "Email us" },
-        { label: "Twitter", ariaLabel: "Twitter" },
-        { label: "LinkedIn", ariaLabel: "LinkedIn" }
+        { label: "AI Proposal Writer", href: '/agents/proposal' }
       ]
     }
   ];
@@ -265,6 +266,10 @@ function App() {
         <Route 
           path="/expense-summary" 
           element={<ExpenseSummary />}
+        />
+        <Route 
+          path="/agents/proposal" 
+          element={<ProposalAgent />} 
         />
         {/* When we add more pages, they go here:
           <Route path="/transactions" element={<TransactionsPage />} />
