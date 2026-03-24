@@ -7,8 +7,8 @@ import "react-datepicker/dist/react-datepicker.css";
 // Import Auth Components
 import Login from './components/Login';
 import Register from './components/Register';
-import GoogleAuth from './components/GoogleAuth';
 import CardNav from './components/CardNav';
+import LandingPage from './components/LandingPage';
 import logo from './assets/logo.svg';
 import logoDark from './assets/logo-dark.svg';
 import TransactionDashboard from './components/TransactionDashboard';
@@ -22,22 +22,6 @@ import ProposalAgent from './components/Agents/ProposalAgent/ProposalAgent';
 
 // Import Global CSS
 import './Global.css';
-
-// --- Placeholder Dashboard ---
-// This is now *just* the page content. The nav is handled by ProtectedLayout.
-function Dashboard({ user }) {
-  return (
-    // <nav> has been removed from here
-    <main className="dashboard-main">
-      <h2>Welcome, {user.username || 'User'}!</h2>
-      <p>Summarized dashboard will appear here.</p>
-      <pre>
-        {JSON.stringify(user, null, 2)}
-      </pre>
-    </main>
-  );
-}
-// --- End Placeholder ---
 
 // ... AuthCallback component (no changes) ...
 function AuthCallback({ onLogin }) {
@@ -121,7 +105,7 @@ const items = [
     }
   ];
 
-function ProtectedLayout({ user, onLogout, theme, onToggleTheme }) {
+function ProtectedLayout({ onLogout, theme, onToggleTheme }) {
   return (
     <div className="app-container">
       <CardNav
@@ -173,7 +157,6 @@ function App() {
   const [auth, setAuth] = useState(getInitialUser);
   const [theme, setTheme] = useState(getInitialTheme);
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -237,6 +220,17 @@ function App() {
 
   return (
     <Routes>
+      <Route
+        path="/"
+        element={
+          <LandingPage
+            isAuthenticated={Boolean(auth.user)}
+            theme={theme}
+            onToggleTheme={handleToggleTheme}
+          />
+        }
+      />
+
       {/* PUBLIC ROUTES (no changes) */}
       <Route 
         path="/login" 
@@ -268,7 +262,6 @@ function App() {
         element={
           auth.user ? (
             <ProtectedLayout
-              user={auth.user}
               onLogout={handleLogout}
               theme={theme}
               onToggleTheme={handleToggleTheme}
@@ -301,29 +294,8 @@ function App() {
           path="/agents/proposal" 
           element={<ProposalAgent />} 
         />
-        {/* When we add more pages, they go here:
-          <Route path="/transactions" element={<TransactionsPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-        */}
+        {/* When we add more pages, they go here. */}
       </Route>
-      
-      {/* DEFAULT ROUTE (no changes) */}
-      <Route 
-        path="/dashboard" 
-        element={
-          auth.user ? <Dashboard user={auth.user} onLogout={handleLogout} /> : <Navigate to="/login" />
-        } 
-      />
-      
-      {/* DEFAULT ROUTE
-        Redirects the root path "/" to the dashboard or login page.
-      */}
-      <Route 
-        path="/" 
-        element={
-          auth.user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
-        } 
-      />
 
       {/* CATCH-ALL (no changes) */}
       <Route path="*" element={<div><h2>404 Not Found</h2></div>} />
