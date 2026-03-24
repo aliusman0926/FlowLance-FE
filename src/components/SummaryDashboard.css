@@ -121,6 +121,44 @@
   margin-top: 0.5rem;
 }
 
+.balance-figure-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.balance-visibility-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-top: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+}
+
+.balance-visibility-toggle:hover {
+  border-color: var(--accent-color);
+  background: var(--surface-inset);
+  transform: translateY(-1px);
+}
+
+.balance-visibility-toggle:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+}
+
+.balance-visibility-toggle svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
 .stat-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -308,6 +346,10 @@
   .transactions-card,
   .milestones-card {
     grid-column: span 1;
+  }
+
+  .balance-figure-row {
+    align-items: flex-start;
   }
 }
 

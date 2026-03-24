@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // 1. Import hook
 import axios from 'axios';
 import './SummaryDashboard.css';
-import { TbRefresh } from "react-icons/tb";
+import { TbEye, TbEyeOff, TbRefresh } from "react-icons/tb";
 
 const API_BASE_URL = 'http://localhost:3000/api';
+const BALANCE_VISIBILITY_KEY = 'summaryDashboardFinancialVisibility';
+const HIDDEN_AMOUNT = '*****';
 
 const formatCurrency = (amount = 0) => {
   return Number(amount || 0).toLocaleString('en-US', {
@@ -39,6 +41,14 @@ function SummaryDashboard({ user }) {
   const [milestones, setMilestones] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showFinancials, setShowFinancials] = useState(() => {
+    if (typeof window === 'undefined') {
+      return true;
+    }
+
+    const savedPreference = window.localStorage.getItem(BALANCE_VISIBILITY_KEY);
+    return savedPreference === null ? true : savedPreference === 'true';
+  });
 
   const refreshDashboard = async () => {
     setLoading(true);
@@ -87,6 +97,12 @@ function SummaryDashboard({ user }) {
       refreshDashboard();
     }
   }, [token]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(BALANCE_VISIBILITY_KEY, String(showFinancials));
+    }
+  }, [showFinancials]);
 
   const totalCredits = useMemo(
     () => transactions.filter((t) => t.type === 'credit').reduce((sum, t) => sum + Number(t.amount || 0), 0),
@@ -137,6 +153,19 @@ function SummaryDashboard({ user }) {
 
   const latestTransactions = transactions.slice(0, 6);
 
+  const getDisplayAmount = (amount, { prefix = '' } = {}) => {
+    if (!showFinancials) {
+      return HIDDEN_AMOUNT;
+    }
+
+    return `${prefix}${formatCurrency(amount)}`;
+  };
+
+  const toggleFinancialVisibility = (event) => {
+    event.stopPropagation();
+    setShowFinancials((currentValue) => !currentValue);
+  };
+
   return (
     <div className="summary-dashboard">
       <div className="dashboard-hero">
@@ -157,14 +186,26 @@ function SummaryDashboard({ user }) {
           <div className="card-head">
             <p className="label">Current balance</p>
             <span className={`badge ${netChange >= 0 ? 'badge-success' : 'badge-danger'}`}>
-              {netChange >= 0 ? '+' : ''}{formatCurrency(netChange)}
+              {getDisplayAmount(netChange, { prefix: netChange >= 0 ? '+' : '' })}
             </span>
           </div>
-          <h2 className="balance-figure">{formatCurrency(balance)}</h2>
+          <div className="balance-figure-row">
+            <h2 className="balance-figure">{getDisplayAmount(balance)}</h2>
+            <button
+              type="button"
+              className="balance-visibility-toggle"
+              onClick={toggleFinancialVisibility}
+              aria-label={showFinancials ? 'Hide financial amounts' : 'Show financial amounts'}
+              aria-pressed={!showFinancials}
+              title={showFinancials ? 'Hide financial amounts' : 'Show financial amounts'}
+            >
+              {showFinancials ? <TbEyeOff aria-hidden="true" /> : <TbEye aria-hidden="true" />}
+            </button>
+          </div>
           <div className="stat-row">
-            <StatPill label="Total Incoming" value={formatCurrency(totalCredits)} tone="positive" />
-            <StatPill label="Total Outgoing" value={formatCurrency(totalDebits)} tone="muted" />
-            <StatPill label="Pending payouts" value={formatCurrency(pendingPayouts)} tone="accent" />
+            <StatPill label="Total Incoming" value={getDisplayAmount(totalCredits)} tone="positive" />
+            <StatPill label="Total Outgoing" value={getDisplayAmount(totalDebits)} tone="muted" />
+            <StatPill label="Pending payouts" value={getDisplayAmount(pendingPayouts)} tone="accent" />
           </div>
         </div>
 
@@ -219,7 +260,7 @@ function SummaryDashboard({ user }) {
                       {m.status || 'Pending'}
                     </span>
                     <span className="muted">{m.dueDate ? new Date(m.dueDate).toLocaleDateString() : 'No date'}</span>
-                    <span className="pill-value">{formatCurrency(m.paymentAmount)}</span>
+                    <span className="pill-value">{getDisplayAmount(m.paymentAmount)}</span>
                   </div>
                 </div>
               ))
@@ -252,7 +293,7 @@ function SummaryDashboard({ user }) {
                     </div>
                   </div>
                   <p className={`txn-amount ${txn.type === 'credit' ? 'credit' : 'debit'}`}>
-                    {txn.type === 'credit' ? '+' : '-'}{formatCurrency(txn.amount)}
+                    {getDisplayAmount(txn.amount, { prefix: txn.type === 'credit' ? '+' : '-' })}
                   </p>
                 </div>
               ))
