@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation, Outlet, href } from 'react-router-dom'; // Import Outlet
+import { Routes, Route, Navigate, useNavigate, useLocation, Outlet } from 'react-router-dom'; // Import Outlet
 import axios from 'axios';
 // e.g., in your top-level App.jsx or in the file where you use DatePicker
 import "react-datepicker/dist/react-datepicker.css";
@@ -10,6 +10,7 @@ import Register from './components/Register';
 import GoogleAuth from './components/GoogleAuth';
 import CardNav from './components/CardNav';
 import logo from './assets/logo.svg';
+import logoDark from './assets/logo-dark.svg';
 import TransactionDashboard from './components/TransactionDashboard';
 import GigBoard from './components/GigBoard';
 import CalendarPage from './components/CalendarPage';
@@ -95,7 +96,7 @@ const items = [
     {
       label: "Financials",
       bgColor: "var(--accent-color)",
-      textColor: "var(--text-primary)",
+      textColor: "var(--accent-contrast)",
       links: [
         { label: "Transactions", href: '/transactions' },
         { label: "Expense Summary", href: '/expense-summary' }
@@ -104,7 +105,7 @@ const items = [
     {
       label: "Projects", 
       bgColor: "var(--accent-color)",
-      textColor: "var(--text-primary)",
+      textColor: "var(--accent-contrast)",
       links: [
         { label: "Gigs", href: '/gigs' },
         { label: "Calendar", href: '/calendar' }
@@ -113,25 +114,27 @@ const items = [
     {
       label: "AI Agents",
       bgColor: "var(--accent-color)", 
-      textColor: "var(--text-primary)",
+      textColor: "var(--accent-contrast)",
       links: [
         { label: "AI Proposal Writer", href: '/agents/proposal' }
       ]
     }
   ];
 
-function ProtectedLayout({ user, onLogout }) {
+function ProtectedLayout({ user, onLogout, theme, onToggleTheme }) {
   return (
     <div className="app-container">
       <CardNav
-        logo={logo}
+        logo={theme === 'light' ? logoDark : logo}
         logoAlt="Company Logo"
         items={items}
-        baseColor="#121212"
-        menuColor="#eefff6"
-        buttonBgColor="#00341d"
-        buttonTextColor="#eefff6"
+        baseColor="var(--nav-base-color)"
+        menuColor="var(--nav-menu-color)"
+        buttonBgColor="var(--nav-button-bg)"
+        buttonTextColor="var(--nav-button-text)"
         ease="power3.out"
+        theme={theme}
+        onToggleTheme={onToggleTheme}
         onLogout={onLogout}
       />
       <main className="app-content">
@@ -145,6 +148,15 @@ function ProtectedLayout({ user, onLogout }) {
 
 
 function App() {
+  const getInitialTheme = () => {
+    if (typeof window === 'undefined') {
+      return 'dark';
+    }
+
+    const savedTheme = window.localStorage.getItem('theme');
+    return savedTheme === 'light' ? 'light' : 'dark';
+  };
+
   // ... getInitialUser function (no changes) ...
   const getInitialUser = () => {
     const token = localStorage.getItem('token');
@@ -159,8 +171,15 @@ function App() {
   };
 
   const [auth, setAuth] = useState(getInitialUser);
+  const [theme, setTheme] = useState(getInitialTheme);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.style.colorScheme = theme;
+    window.localStorage.setItem('theme', theme);
+  }, [theme]);
 
   // ... useEffect for auth (no changes) ...
   useEffect(() => {
@@ -212,6 +231,10 @@ function App() {
     navigate('/login');
   };
 
+  const handleToggleTheme = () => {
+    setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'));
+  };
+
   return (
     <Routes>
       {/* PUBLIC ROUTES (no changes) */}
@@ -243,7 +266,14 @@ function App() {
       */}
       <Route 
         element={
-          auth.user ? <ProtectedLayout user={auth.user} onLogout={handleLogout} /> : <Navigate to="/login" />
+          auth.user ? (
+            <ProtectedLayout
+              user={auth.user}
+              onLogout={handleLogout}
+              theme={theme}
+              onToggleTheme={handleToggleTheme}
+            />
+          ) : <Navigate to="/login" />
         }
       >
         {/* All protected routes go inside here */}

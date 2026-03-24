@@ -6,6 +6,7 @@ import './Auth.css';
 
 // Import the logo
 import Logo from '../assets/logo.svg';
+import LogoDark from '../assets/logo-dark.svg';
 
 // Set the base URL for your API
 const API_BASE_URL = 'http://localhost:3000/api';
@@ -16,6 +17,10 @@ function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const logoSrc =
+    typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'light'
+      ? LogoDark
+      : Logo;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,7 +45,7 @@ function Login({ onLogin }) {
   return (
     <div className="auth-container">
       {/* Logo is placed outside the card, centered by the container's flex rules */}
-      <img src={Logo} alt="Company Logo" className="auth-logo" />
+      <img src={logoSrc} alt="Company Logo" className="auth-logo" />
 
       <div className="auth-card">
         <h2 className="auth-title">Welcome Back</h2>

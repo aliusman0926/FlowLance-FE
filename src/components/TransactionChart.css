@@ -6,16 +6,16 @@
 }
 
 .custom-tooltip {
-  background-color: var(--bg-darker);
-  border: 1px solid var(--bg-lighter);
+  background-color: var(--chart-tooltip-bg);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 12px;
-  box-shadow: 0 4px 12px rgba(255, 251, 251, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .tooltip-label {
   font-weight: 600;
-  color: var(--text-light);
+  color: var(--chart-tooltip-text);
   margin-bottom: 8px;
 }
 
@@ -33,12 +33,12 @@
   justify-content: center;
   height: 100%;
   min-height: 280px;
-  color: #f0f0f0;
+  color: var(--text-primary);
   font-size: 0.9rem;
 }
 
 /* Make Recharts text match our theme */
 .recharts-text,
 .recharts-legend-item-text {
-  fill: #f0f0f0 !important;
+  fill: var(--text-primary) !important;
 }

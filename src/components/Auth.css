@@ -2,19 +2,6 @@
    Description: Minimal, sleek, and professional styling for auth components.
 */
 
-:root {
-  --bg-color: #111111; /* Very dark grey, almost black */
-  --card-color: #1a1a1a; /* Slightly lighter grey for the card */
-  --border-color: #333333; /* Subtle border */
-  --text-primary: #f0f0f0; /* Soft white */
-  --text-secondary: #aaaaaa; /* Medium grey for subtitles */
-  --text-link: #4a90e2; /* A nice, clean blue */
-  --accent-color: #4a90e2; /* Using link color as accent */
-  --accent-color-hover: #5aa1f2;
-  --error-color: #e57373; /* Soft red for errors */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-
 .auth-container {
   display: flex;
   flex-direction: column; /* CHANGED: Stacks logo and card vertically */
@@ -26,6 +13,7 @@
   font-family: var(--font-sans);
   color: var(--text-primary);
   padding: 1rem;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Updated Logo Styles */
@@ -90,7 +78,7 @@
 }
 
 .auth-input {
-  background-color: var(--bg-color);
+  background-color: var(--input-bg);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
   padding: 0.75rem 1rem;
@@ -101,17 +89,17 @@
 
 .auth-input:focus {
   outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+  border-color: var(--auth-accent-color);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .auth-input::placeholder {
-  color: #555;
+  color: var(--text-placeholder);
 }
 
 .auth-button {
-  background-color: var(--accent-color);
-  color: white;
+  background-color: var(--auth-accent-color);
+  color: var(--text-inverse);
   font-size: 1rem;
   font-weight: 600;
   padding: 0.75rem;
@@ -126,12 +114,12 @@
 }
 
 .auth-button:hover:not(:disabled) {
-  background-color: var(--accent-color-hover);
+  background-color: var(--auth-accent-color-hover);
 }
 
 .auth-button:disabled {
-  background-color: #333;
-  color: #777;
+  background-color: var(--disabled-bg);
+  color: var(--disabled-text);
   cursor: not-allowed;
 }
 
@@ -140,7 +128,7 @@
   width: 20px;
   height: 20px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border-top-color: var(--text-inverse);
   border-radius: 50%;
   animation: auth-spin 0.8s linear infinite;
 }
@@ -187,8 +175,8 @@
 }
 
 .google-auth-button:hover {
-  background-color: #222;
-  border-color: #444;
+  background-color: var(--surface-elevated);
+  border-color: var(--text-secondary);
 }
 
 .google-auth-button .google-icon {
@@ -204,13 +192,13 @@
 }
 
 .auth-toggle a {
-  color: var(--text-link);
+  color: var(--link-color);
   font-weight: 500;
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .auth-toggle a:hover {
-  color: var(--accent-color-hover);
+  color: var(--auth-accent-color-hover);
   text-decoration: underline;
 }

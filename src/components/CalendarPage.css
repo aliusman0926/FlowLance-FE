@@ -2,22 +2,17 @@
    Theme matched to GigBoard.css with calendar-specific tweaks
 */
 
-:root {
+/* Base page */
+.calendar-page {
   --bg: var(--bg-color);
   --card: var(--card-color);
   --border: var(--border-color);
-  --text-primary: var(--text-primary);
-  --text-secondary: var(--text-secondary);
-  --muted: #b1b4bc;
-  --primary: #4f46e5;
-  --danger: #dc2626;
-  --radius: 10px;
-  --milestone-button: #13623c;
-  --milestone-button-hover: #065a30;
-}
-
-/* Base page */
-.calendar-page {
+  --muted: var(--muted);
+  --primary: var(--primary);
+  --danger: var(--danger);
+  --radius: var(--radius);
+  --milestone-button: var(--milestone-button);
+  --milestone-button-hover: var(--milestone-button-hover);
   min-height: 100vh;
   padding: 24px;
   background: var(--bg);
@@ -47,7 +42,7 @@
 /* Buttons */
 .btn {
   font-size: 11px;
-  color: var(--text-secondary);
+  color: var(--accent-contrast);
   padding: 5px 8px;
   border-radius: 6px;
   border: 1px solid var(--accent-color);
@@ -57,7 +52,7 @@
 
 .milestone-btn {
   font-size: 11px;
-  color: var(--text-secondary);
+  color: var(--accent-contrast);
   padding: 5px 8px;
   border-radius: 6px;
   border: 1px solid var(--milestone-button);
@@ -75,7 +70,7 @@
 
 .btn-secondary {
   font-size: 11px;
-  color: #393939;
+  color: var(--text-inverse);
   padding: 5px 8px;
   border-radius: 6px;
   border: 1px solid var(--text-secondary);
@@ -88,9 +83,22 @@
   border: 1px solid var(--text);
 }
 
+.milestone-actions .btn-secondary {
+  background: var(--surface-elevated);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.milestone-actions .btn-secondary:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--accent-contrast);
+  box-shadow: 0 8px 18px rgba(10, 113, 64, 0.18);
+}
+
 .btn-danger {
   font-size: 11px;
-  color: var(--text-secondary);
+  color: var(--accent-contrast);
   padding: 5px 8px;
   border-radius: 6px;
   border: 1px solid var(--accent-color-red);
@@ -120,7 +128,7 @@
 .btn-primary {
   background: #15803d;
   border: none;
-  color: white;
+  color: var(--accent-contrast);
   padding: 12px;
   border-radius: 6px;
   font-size: 15px;
@@ -163,10 +171,10 @@
 
 /* Calendar overrides */
 .react-calendar {
-  background: #111 !important;
-  border: 1px solid #2a2a2a !important;
+  background: var(--card-color) !important;
+  border: 1px solid var(--border-color) !important;
   border-radius: 12px !important;
-  color: #fff !important;
+  color: var(--text-primary) !important;
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.45) !important;
   padding: 10px !important;
 }
@@ -236,14 +244,14 @@
 }
 
 .modal {
-  background-color: #1e1e1e;
+  background-color: var(--surface-elevated);
   border: 1px solid var(--border);
   border-radius: 16px;
   width: 100%;
   max-width: 640px;
   padding: 1.5rem;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
-  color: #e5e7eb;
+  color: var(--text-primary);
 }
 
 .modal-header {
@@ -271,16 +279,16 @@
 
 /* Inputs */
 .modal input, .modal textarea, .modal select {
-  background: #262626;
-  border: 1px solid #333;
-  color: #e5e7eb;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   border-radius: 12px;
   padding: 12px 14px;
   font-size: 14px;
   width: 100%;
 }
 
-.modal input::placeholder, .modal textarea::placeholder { color: #9ca3af; }
+.modal input::placeholder, .modal textarea::placeholder { color: var(--text-placeholder); }
 
 .modal input:focus, .modal textarea:focus, .modal select:focus {
   outline: none;
@@ -323,8 +331,8 @@
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: #262626;
-  color: #e5e7eb;
+  background: var(--input-bg);
+  color: var(--text-primary);
 }
 
 hr {
@@ -358,14 +366,14 @@ hr {
 
 /* 2. Hover effect — gray background */
 .react-calendar__tile:hover {
-  background: #3a3a3a !important;
-  color: white !important;
+  background: var(--hover-color) !important;
+  color: var(--text-primary) !important;
 }
 
 /* 3. Selected date (full green fill) */
 .react-calendar__tile--active {
   background: var(--accent-color) !important; /* dark green */
-  color: white !important;
+  color: var(--accent-contrast) !important;
   border-radius: 6px !important;
   border: none !important;
 }
@@ -378,13 +386,13 @@ hr {
 .react-calendar__tile--now {
   background: transparent !important;
   border: 2px solid var(--text-secondary) !important;
-  color: white !important;
+  color: var(--text-primary) !important;
   border-radius: 6px !important;
 }
 
 /* Remove yellow highlight react-calendar applies internally */
 .react-calendar__tile--now:enabled:hover {
-  background: #3a3a3a !important;
+  background: var(--hover-color) !important;
 }
 
 /* 5. Highlighted milestones — green border, square outline, green text */
@@ -398,7 +406,7 @@ hr {
 
 /* On hover, still show the gray hover but keep green text */
 .milestone-day:hover {
-  background: #3a3a3a !important;
+  background: var(--hover-color) !important;
   color: var(--accent-color) !important;
 }
 
@@ -407,12 +415,12 @@ hr {
   background: var(--accent-color) !important; /* full green fill for selected */
   border: 2px solid var(--accent-color) !important; /* green outline */
   border: none !important;
-  color: white !important;
+  color: var(--accent-contrast) !important;
 }
 
 /* 7. Calendar weekday labels white */
 .react-calendar__month-view__weekdays__weekday {
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
   font-weight: 600;
 }
 
@@ -420,5 +428,5 @@ hr {
 .react-calendar__navigation button:hover,
 .react-calendar__navigation__label:hover {
   border-radius: 6px !important;
-  background: #3a3a3a !important;
+  background: var(--hover-color) !important;
 }

@@ -3,27 +3,26 @@
    Clean, minimal, Jira-inspired look
 */
 
-:root {
-  --bg: #f5f7fb;
-  --card: #ffffff;
-  --border: #e5e7eb;
-  --text: #898989;
-  --muted: #b1b4bc;
-  --primary: #4f46e5; /* indigo */
-  --danger: #dc2626;
-  --radius: 10px;
-  --milestone-button: #13623c;
-  --milestone-button-hover: #065a30;
-}
-
 * {
   box-sizing: border-box;
 }
 
 /* Layout */
 .gig-board {
+  --bg: var(--bg-color);
+  --card: var(--card-color);
+  --border: var(--border-color);
+  --text: var(--text-secondary);
+  --muted: var(--muted);
+  --primary: var(--primary);
+  --danger: var(--danger);
+  --radius: var(--radius);
+  --milestone-button: var(--milestone-button);
+  --milestone-button-hover: var(--milestone-button-hover);
   padding: 24px;
   min-height: 100vh;
+  background: var(--bg);
+  color: var(--text-primary);
 }
 
 .gig-board-header {
@@ -124,7 +123,7 @@
 /* Buttons */
 .btn {
   font-size: 11px;
-  color: var(--text-secondary);
+  color: var(--accent-contrast);
   padding: 5px 8px;
   border-radius: 6px;
   border: 1px solid var(--accent-color);
@@ -134,7 +133,7 @@
 
 .milestone-btn {
   font-size: 11px;
-  color: var(--text-secondary);
+  color: var(--accent-contrast);
   padding: 5px 8px;
   border-radius: 6px;
   border: 1px solid var(--milestone-button);
@@ -152,7 +151,7 @@
 
 .btn-secondary {
   font-size: 11px;
-  color: #393939;
+  color: var(--text-inverse);
   padding: 5px 8px;
   border-radius: 6px;
   border: 1px solid var(--text-secondary);
@@ -167,7 +166,7 @@
 
 .btn-danger {
   font-size: 11px;
-  color: var(--text-secondary);
+  color: var(--accent-contrast);
   padding: 5px 8px;
   border-radius: 6px;
   border: 1px solid var(--accent-color-red);
@@ -203,6 +202,7 @@
 
 .milestone {
   background: var(--accent-color);
+  color: var(--accent-contrast);
   border-radius: 6px;
   padding: 8px;
   display: flex;
@@ -252,7 +252,7 @@
 }
 
 .modal {
-  background-color: #1e1e1e;
+  background-color: var(--surface-elevated);
   border: 1px solid var(--border-color);
   border-radius: 16px;
   width: 100%;
@@ -293,9 +293,9 @@
 .modal input,
 .modal textarea,
 .modal select {
-  background: #262626;
-  border: 1px solid #333;
-  color: #e5e7eb;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   border-radius: 12px;
   padding: 12px 14px;
   font-size: 14px;
@@ -303,7 +303,7 @@
 
 .modal input::placeholder,
 .modal textarea::placeholder {
-  color: #9ca3af;
+  color: var(--text-placeholder);
 }
 
 .modal input:focus,
@@ -337,7 +337,7 @@
 .btn-primary {
   background: #15803d;
   border: none;
-  color: white;
+  color: var(--accent-contrast);
   padding: 12px;
   border-radius: 6px;
   font-size: 15px;
@@ -383,7 +383,7 @@
 /* --- Input Fields --- */
 .txn-form-group input[type="number"],
 .txn-form-group input[type="text"] {
-  background-color: #2a2a2a;
+  background-color: var(--input-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 0.75rem 1rem;
@@ -395,7 +395,7 @@
 .txn-form-group input:focus {
   outline: none;
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 /* --- Type Toggle --- */
@@ -446,7 +446,7 @@
 .txn-submit-btn {
   width: 100%;
   background-color: var(--accent-color);
-  color: white;
+  color: var(--accent-contrast);
   font-size: 1rem;
   font-weight: 600;
   padding: 0.85rem 1.5rem;
@@ -461,11 +461,11 @@
 }
 
 .txn-submit-btn:hover:not(:disabled) {
-  background-color: #3a80d2;
+  background-color: var(--accent-color-hover);
 }
 
 .txn-submit-btn:disabled {
-  background-color: #2a2a2a;
+  background-color: var(--disabled-bg);
   color: var(--text-secondary);
   cursor: not-allowed;
 }

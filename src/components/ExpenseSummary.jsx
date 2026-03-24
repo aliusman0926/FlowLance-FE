@@ -57,9 +57,9 @@ function ChartCard({ title, label, data, colors = CHART_COLORS }) {
               </Pie>
               <Tooltip
                 formatter={(value) => formatCurrency(value)}
-                contentStyle={{ background: 'var(--card-color)', border: '1px solid var(--border-color)', color: '#fff' }}
-                itemStyle={{ color: '#fff' }}
-                labelStyle={{ color: '#fff' }}
+                contentStyle={{ background: 'var(--chart-tooltip-bg)', border: '1px solid var(--border-color)', color: 'var(--chart-tooltip-text)' }}
+                itemStyle={{ color: 'var(--chart-tooltip-text)' }}
+                labelStyle={{ color: 'var(--chart-tooltip-text)' }}
               />
               <Legend wrapperStyle={{ fontSize: '0.9rem' }} />
             </PieChart>

@@ -76,7 +76,7 @@
 /* --- Log Transaction Button --- */
 .log-txn-btn {
   background-color: var(--accent-color);
-  color: white;
+  color: var(--accent-contrast);
   font-size: 0.9rem;
   font-weight: 600;
   padding: 0.75rem 1rem;
@@ -89,7 +89,7 @@
 }
 
 .log-txn-btn:hover {
-  background-color: #3a80d2; /* Darker accent */
+  background-color: var(--accent-color-hover);
 }
 
 /* --- Graph Box (3/4 width) --- */
@@ -149,7 +149,8 @@
   border-radius: 50px;
   font-size: 14px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  background: var(--card-color);
+  background: var(--input-bg);
+  color: var(--text-primary);
   cursor: pointer;
   margin-bottom: 10px;
 }
@@ -165,7 +166,7 @@
   position: absolute;
   right: 12px;
   top: 12px;
-  color: #d9534f;
+  color: var(--error-color);
   font-size: 12px;
   background: var(--card-color);
   padding: 2px 6px;
@@ -227,7 +228,7 @@
 /* For no results */
 .currency-list .no-results {
   text-align: center;
-  color: #999;
+  color: var(--text-secondary);
   cursor: default;
   padding: 12px;
 }
@@ -238,7 +239,7 @@
 }
 
 .curr-rate {
-  color: #555;
+  color: var(--text-placeholder);
   font-size: 13px;
 }
 
@@ -265,7 +266,7 @@
 }
 
 .date-pill {
-  background: #1a1a1a;
+  background: var(--input-bg);
   color: var(--text-secondary);
   padding: 10px 14px;
   font-size: 14px;
@@ -282,11 +283,11 @@
 }
 
 .date-pill::placeholder {
-  color: #888;
+  color: var(--text-placeholder);
 }
 
 .date-pill:hover {
-  border-color: #3a3a3a;
+  border-color: var(--text-secondary);
 }
 
 .date-pill:focus {
@@ -295,12 +296,12 @@
 
 /* Make calendar icon white */
 .date-pill::-webkit-calendar-picker-indicator {
-  filter: invert(1);
+  filter: var(--calendar-picker-filter);
   cursor: pointer;
 }
 
 .date-separator {
-  color: #6a6a6a;
+  color: var(--text-placeholder);
   font-weight: 600;
   font-size: 18px;
 }

@@ -21,7 +21,7 @@
 /* --- Input Fields --- */
 .txn-form-group input[type="number"],
 .txn-form-group input[type="text"] {
-  background-color: #2a2a2a;
+  background-color: var(--input-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 0.75rem 1rem;
@@ -33,7 +33,7 @@
 .txn-form-group input:focus {
   outline: none;
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 /* --- Type Toggle --- */
@@ -84,7 +84,7 @@
 .txn-submit-btn {
   width: 100%;
   background-color: var(--accent-color);
-  color: white;
+  color: var(--accent-contrast);
   font-size: 1rem;
   font-weight: 600;
   padding: 0.85rem 1.5rem;
@@ -99,11 +99,11 @@
 }
 
 .txn-submit-btn:hover:not(:disabled) {
-  background-color: #3a80d2;
+  background-color: var(--accent-color-hover);
 }
 
 .txn-submit-btn:disabled {
-  background-color: #2a2a2a;
+  background-color: var(--disabled-bg);
   color: var(--text-secondary);
   cursor: not-allowed;
 }

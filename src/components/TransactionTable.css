@@ -25,7 +25,7 @@
 }
 
 .transaction-table td {
-  background-color: #1f1f1f; /* Slightly lighter than card color */
+  background-color: var(--table-row-bg); /* Slightly lighter than card color */
   padding: 1.25rem 1rem;
   vertical-align: middle;
 }
@@ -36,7 +36,7 @@
 }
 
 .transaction-table tr:hover td {
-  background-color: #2a2a2a; /* Even lighter on hover */
+  background-color: var(--table-row-hover); /* Even lighter on hover */
 }
 
 /* Rounded corners for rows */
@@ -230,7 +230,7 @@
 
 .add-txn-button {
   background-color: var(--accent-color);
-  color: white;
+  color: var(--accent-contrast);
   font-size: 1rem;
   font-weight: 600;
   padding: 0.75rem 1.5rem;
@@ -241,7 +241,7 @@
 }
 
 .add-txn-button:hover {
-  background-color: #3a80d2; /* Darker accent */
+  background-color: var(--accent-color-hover);
   transform: scale(1.05);
 }
 

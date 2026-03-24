@@ -6,14 +6,130 @@
 :root {
   --bg-color: #111111;
   --card-color: #1a1a1a;
-  --hover-color: #3f3f3f;
+  --surface-elevated: #232323;
+  --surface-strong: #0d1117;
+  --surface-subtle: rgba(255, 255, 255, 0.02);
+  --surface-inset: rgba(255, 255, 255, 0.05);
+  --hover-color: #2b2b2b;
   --border-color: #333333;
   --text-primary: #f0f0f0;
   --text-secondary: #aaaaaa;
+  --text-placeholder: #666666;
+  --text-inverse: #f7fff9;
   --accent-color: #0a7140;
   --accent-color-hover: #0c8a48;
   --accent-color-red: #923511;
   --accent-color-red-hover: #b33a14;
+  --accent-contrast: #f7fff9;
+  --link-color: #4a90e2;
+  --auth-accent-color: #4a90e2;
+  --auth-accent-color-hover: #5aa1f2;
+  --error-color: #e57373;
+  --success-color: #4caf50;
+  --success-soft: rgba(76, 175, 80, 0.1);
+  --danger-soft: rgba(244, 67, 54, 0.12);
+  --focus-ring: rgba(74, 144, 226, 0.24);
+  --disabled-bg: #2a2a2a;
+  --disabled-text: #777777;
+  --input-bg: #1f1f1f;
+  --modal-overlay: rgba(0, 0, 0, 0.7);
+  --calendar-picker-filter: invert(1);
+  --nav-base-color: #121212;
+  --nav-menu-color: #eefff6;
+  --nav-border: rgba(255, 255, 255, 0.1);
+  --nav-shadow: 0 16px 32px rgba(0, 0, 0, 0.22);
+  --nav-button-bg: #00341d;
+  --nav-button-text: #eefff6;
+  --nav-button-hover: #0a7140;
+  --nav-toggle-bg: rgba(255, 255, 255, 0.04);
+  --nav-toggle-border: rgba(255, 255, 255, 0.1);
+  --nav-toggle-thumb: #1c2a21;
+  --nav-toggle-shadow: 0 8px 18px rgba(0, 0, 0, 0.26);
+  --chart-tooltip-bg: #171717;
+  --chart-tooltip-text: #f0f0f0;
+  --bg-darker: #0f0f0f;
+  --bg-lighter: #2b2b2b;
+  --text-light: #f0f0f0;
+  --text-dim: #aaaaaa;
+  --muted: #b1b4bc;
+  --primary: #4f46e5;
+  --danger: #dc2626;
+  --radius: 10px;
+  --milestone-button: #13623c;
+  --milestone-button-hover: #065a30;
+  --table-row-bg: #1f1f1f;
+  --table-row-hover: #2a2a2a;
+  --panel-bg: #262626;
+  --editor-bg: #0d1117;
+  --editor-overlay: rgba(13, 17, 23, 0.8);
+  --panel-hover: rgba(255, 255, 255, 0.05);
+  --success-text: #86efac;
+  --danger-text: #fca5a5;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+[data-theme='light'] {
+  --bg-color: #f5f7f5;
+  --card-color: #ffffff;
+  --surface-elevated: #eef2ef;
+  --surface-strong: #f8faf8;
+  --surface-subtle: rgba(20, 32, 24, 0.03);
+  --surface-inset: rgba(20, 32, 24, 0.06);
+  --hover-color: #e9eeeb;
+  --border-color: #d4ddd7;
+  --text-primary: #152018;
+  --text-secondary: #5f6d64;
+  --text-placeholder: #879289;
+  --text-inverse: #f7fff9;
+  --accent-color: #0a7140;
+  --accent-color-hover: #095d36;
+  --accent-color-red: #b64721;
+  --accent-color-red-hover: #993d1d;
+  --accent-contrast: #f7fff9;
+  --link-color: #2563eb;
+  --auth-accent-color: #2563eb;
+  --auth-accent-color-hover: #1d4ed8;
+  --error-color: #d65555;
+  --success-color: #2f9e4f;
+  --success-soft: rgba(47, 158, 79, 0.12);
+  --danger-soft: rgba(214, 85, 85, 0.12);
+  --focus-ring: rgba(37, 99, 235, 0.18);
+  --disabled-bg: #dde5e0;
+  --disabled-text: #7f8a83;
+  --input-bg: #ffffff;
+  --modal-overlay: rgba(18, 24, 20, 0.46);
+  --calendar-picker-filter: none;
+  --nav-base-color: #ffffff;
+  --nav-menu-color: #1b2a20;
+  --nav-border: rgba(21, 32, 24, 0.08);
+  --nav-shadow: 0 16px 32px rgba(16, 24, 20, 0.12);
+  --nav-button-bg: #0a7140;
+  --nav-button-text: #f7fff9;
+  --nav-button-hover: #095d36;
+  --nav-toggle-bg: #f1f5f2;
+  --nav-toggle-border: #d4ddd7;
+  --nav-toggle-thumb: #ffffff;
+  --nav-toggle-shadow: 0 8px 18px rgba(16, 24, 20, 0.12);
+  --chart-tooltip-bg: #ffffff;
+  --chart-tooltip-text: #152018;
+  --bg-darker: #e5ece7;
+  --bg-lighter: #cfdad3;
+  --text-light: #152018;
+  --text-dim: #5f6d64;
+  --muted: #758178;
+  --primary: #4f46e5;
+  --danger: #dc2626;
+  --radius: 10px;
+  --milestone-button: #13623c;
+  --milestone-button-hover: #0d4d30;
+  --table-row-bg: #f8faf8;
+  --table-row-hover: #eef3ef;
+  --panel-bg: #f3f6f3;
+  --editor-bg: #fbfcfb;
+  --editor-overlay: rgba(251, 252, 251, 0.85);
+  --panel-hover: rgba(20, 32, 24, 0.06);
+  --success-text: #1d7f44;
+  --danger-text: #c24141;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -50,6 +166,7 @@ body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 #root {
@@ -157,38 +274,38 @@ body {
 
 /* Full dark theme */
 .dark-calendar {
-  background: #111 !important;
-  border: 1px solid #2a2a2a !important;
+  background: var(--card-color) !important;
+  border: 1px solid var(--border-color) !important;
   border-radius: 12px !important;
-  color: #fff !important;
+  color: var(--text-primary) !important;
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.45) !important;
   padding: 10px !important;
 }
 
 /* Month header */
 .dark-calendar .react-datepicker__current-month {
-  color: #fff;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
 .dark-calendar .react-datepicker__header {
-  background: #111 !important;
-  border-bottom: 1px solid #222 !important;
+  background: var(--card-color) !important;
+  border-bottom: 1px solid var(--border-color) !important;
 }
 
 /* Navigation arrows */
 .dark-calendar .react-datepicker__navigation-icon::before {
-  border-color: #fff !important;
+  border-color: var(--text-primary) !important;
 }
 
 /* Days */
 .dark-calendar .react-datepicker__day {
-  color: #ddd !important;
+  color: var(--text-primary) !important;
 }
 
 .dark-calendar .react-datepicker__day:hover {
-  background: #222 !important;
-  color: #fff !important;
+  background: var(--hover-color) !important;
+  color: var(--text-primary) !important;
   border-radius: 8px !important;
 }
 
@@ -196,7 +313,7 @@ body {
 .dark-calendar .react-datepicker__day--selected,
 .dark-calendar .react-datepicker__day--keyboard-selected {
   background: var(--accent-color) !important;
-  color: #fff !important;
+  color: var(--accent-contrast) !important;
   border-radius: 8px !important;
 }
 
@@ -209,8 +326,8 @@ body {
 /* Month dropdown (if used) */
 .dark-calendar .react-datepicker__month-select,
 .dark-calendar .react-datepicker__year-select {
-  background: #1a1a1a !important;
-  color: #fff !important;
-  border: 1px solid #333 !important;
+  background: var(--surface-elevated) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
   border-radius: 6px !important;
 }

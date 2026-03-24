@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 // use your own icon import if react-icons is not available
 import { GoArrowUpRight } from 'react-icons/go';
+import { TbMoonStars, TbSunHigh } from 'react-icons/tb';
 import { Link } from 'react-router-dom';
 import './CardNav.css';
 
@@ -15,6 +16,8 @@ const CardNav = ({
   menuColor,
   buttonBgColor,
   buttonTextColor,
+  theme = 'dark',
+  onToggleTheme,
   onLogout
 }) => {
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
@@ -22,6 +25,14 @@ const CardNav = ({
   const navRef = useRef(null);
   const cardsRef = useRef([]);
   const tlRef = useRef(null);
+  const nextTheme = theme === 'dark' ? 'light' : 'dark';
+
+  const navStyles = {
+    '--card-nav-base': baseColor,
+    '--card-nav-menu': menuColor || '#000',
+    '--card-nav-button-bg': buttonBgColor,
+    '--card-nav-button-text': buttonTextColor,
+  };
 
   const calculateHeight = () => {
     const navEl = navRef.current;
@@ -137,7 +148,7 @@ const CardNav = ({
 
   return (
     <div className={`card-nav-container ${className}`}>
-      <nav ref={navRef} className={`card-nav ${isExpanded ? 'open' : ''}`} style={{ backgroundColor: baseColor }}>
+      <nav ref={navRef} className={`card-nav ${isExpanded ? 'open' : ''}`} style={navStyles}>
         <div className="card-nav-top">
           <div
             className={`hamburger-menu ${isHamburgerOpen ? 'open' : ''}`}
@@ -145,7 +156,6 @@ const CardNav = ({
             role="button"
             aria-label={isExpanded ? 'Close menu' : 'Open menu'}
             tabIndex={0}
-            style={{ color: menuColor || '#000' }}
           >
             <div className="hamburger-line" />
             <div className="hamburger-line" />
@@ -157,14 +167,35 @@ const CardNav = ({
             </Link>
           </div>
 
-          <button
-            type="button"
-            className="card-nav-cta-button"
-            style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
-            onClick={onLogout}
-          >
-            LogOut
-          </button>
+          <div className="card-nav-actions">
+            <button
+              type="button"
+              className={`card-nav-theme-toggle ${theme === 'light' ? '' : 'is-light'}`}
+              onClick={onToggleTheme}
+              role="switch"
+              aria-checked={theme === 'light'}
+              aria-label={`Switch to ${nextTheme} mode`}
+              title={`Switch to ${nextTheme} mode`}
+            >
+              <span className="card-nav-theme-toggle-track">
+                <span className="card-nav-theme-toggle-thumb" aria-hidden="true" />
+                <span className={`card-nav-theme-toggle-option ${theme === 'light' ? 'active' : ''}`}>
+                  <TbSunHigh className="card-nav-theme-toggle-icon" aria-hidden="true" />
+                </span>
+                <span className={`card-nav-theme-toggle-option ${theme === 'dark' ? 'active' : ''}`}>
+                  <TbMoonStars className="card-nav-theme-toggle-icon" aria-hidden="true" />
+                </span>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              className="card-nav-cta-button"
+              onClick={onLogout}
+            >
+              LogOut
+            </button>
+          </div>
         </div>
 
         <div className="card-nav-content" aria-hidden={!isExpanded}>
