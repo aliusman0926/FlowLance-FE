@@ -19,6 +19,7 @@ import ExpenseSummary from './components/ExpenseSummary';
 
 // Agents Imports
 import ProposalAgent from './components/Agents/ProposalAgent/ProposalAgent';
+import AnalyticsDashboard from './components/Agents/Analytics/AnalyticsDashboard';
 
 // Import Global CSS
 import './Global.css';
@@ -96,11 +97,12 @@ const items = [
       ]
     },
     {
-      label: "AI Agents",
+      label: "Intelligence Hub",
       bgColor: "var(--accent-color)", 
       textColor: "var(--accent-contrast)",
       links: [
-        { label: "AI Proposal Writer", href: '/agents/proposal' }
+        { label: "Proposal Writer Agent", href: '/agents/proposal' },
+        { label: "AI Analytics", href: '/ai-analytics' }
       ]
     }
   ];
@@ -293,6 +295,10 @@ function App() {
         <Route 
           path="/agents/proposal" 
           element={<ProposalAgent />} 
+        />
+        <Route 
+          path="/ai-analytics" 
+          element={<AnalyticsDashboard />} 
         />
         {/* When we add more pages, they go here. */}
       </Route>
