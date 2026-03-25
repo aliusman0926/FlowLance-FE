@@ -42,7 +42,8 @@ const AnalyticsDashboard = () => {
       })
       .catch(err => {
         console.error("Failed to fetch analytics", err);
-        setError("Failed to load AI Analytics. Please try again.");
+        // 🚀 Extract the clean error from Node.js fallback
+        setError(err.response?.data?.error || "Failed to load AI Analytics. Please try again.");
         setLoading(false);
       });
   }, []);
@@ -97,7 +98,22 @@ const AnalyticsDashboard = () => {
   };
 
   if (loading) return <DashboardSkeleton />;
-  if (error) return <div className="analytics-error">{error}</div>;
+  
+  // 🚀 New elegant error state UI
+  if (error) {
+    return (
+      <div className="analytics-container loading-state">
+        <div className="ai-loading-content" style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+          <div className="scanner-ring" style={{ borderColor: '#ef4444' }}>
+            <Zap size={40} className="pulse-icon" color="#ef4444" />
+          </div>
+          <h2 className="loading-title" style={{ color: '#ef4444' }}>Synthesis Failed</h2>
+          <p className="loading-subtitle">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!data) return null;
 
   const { rawStats, aiInsights } = data;
