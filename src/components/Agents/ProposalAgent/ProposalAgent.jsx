@@ -31,14 +31,15 @@ const ProposalAgent = () => {
   const [threadId, setThreadId] = useState(null);
   const [refinementPrompt, setRefinementPrompt] = useState('');
   
-  // 🚀 Text Tracking (Prevents unnecessary saves)
+  // Text Tracking (Prevents unnecessary saves)
   const originalDraftRef = useRef('');
 
-  // 🚀 UI States
+  // UI States
   const [isContextExpanded, setIsContextExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(''); // 🚀 NEW: Error state
 
   useEffect(() => {
     fetchHistory();
@@ -63,7 +64,8 @@ const ProposalAgent = () => {
     setDraft(item.lastDraft || '');
     setPendingDraft(null); 
     setShowDiff(true); 
-    setIsContextExpanded(false); // 🚀 Reset collapse state
+    setIsContextExpanded(false); 
+    setErrorMessage(''); // 🚀 Clear errors on load
   };
 
   const handleNewProposal = () => {
@@ -78,12 +80,15 @@ const ProposalAgent = () => {
     setPendingDraft(null);
     setRefinementPrompt('');
     setShowDiff(true);
-    setIsContextExpanded(false); // 🚀 Reset collapse state
+    setIsContextExpanded(false); 
+    setErrorMessage(''); // 🚀 Clear errors on new
   };
 
   const handleGenerate = async () => {
     if (!jobTitle || !jobDescription) return;
     setIsLoading(true);
+    setErrorMessage(''); // 🚀 Clear previous errors
+    
     try {
       const response = await axios.post(`${API_BASE_URL}/proposals/generate`, {
         jobTitle,
@@ -99,6 +104,8 @@ const ProposalAgent = () => {
       fetchHistory();
     } catch (error) {
       console.error("Generation failed:", error);
+      // 🚀 Safely grab the backend error message
+      setErrorMessage(error.response?.data?.error || "Failed to generate proposal. Please verify your AI service is running.");
     } finally {
       setIsLoading(false);
     }
@@ -108,6 +115,8 @@ const ProposalAgent = () => {
     if (!refinementPrompt || isSaving) return; 
 
     setIsLoading(true);
+    setErrorMessage(''); // 🚀 Clear previous errors
+
     try {
       const response = await axios.post(`${API_BASE_URL}/proposals/generate`, {
         jobTitle, 
@@ -123,6 +132,7 @@ const ProposalAgent = () => {
       fetchHistory(); 
     } catch (error) {
       console.error("Refinement failed:", error);
+      setErrorMessage(error.response?.data?.error || "Failed to refine draft. Please verify your AI service is running.");
     } finally {
       setIsLoading(false);
     }
@@ -151,7 +161,6 @@ const ProposalAgent = () => {
   const handleSaveManualEdit = async (currentText) => {
     if (!threadId || pendingDraft || isLoading || isSaving) return; 
     
-    // 🚀 Skip saving if the text hasn't changed at all!
     if (currentText === originalDraftRef.current) return;
     
     setIsSaving(true);
@@ -161,7 +170,6 @@ const ProposalAgent = () => {
         draft: currentText 
       }, { headers });
       
-      // Update reference to prevent double saves
       originalDraftRef.current = currentText; 
       
       setShowSavedToast(true);
@@ -233,9 +241,23 @@ const ProposalAgent = () => {
           </div>
         </BentoBox>
 
-        {/* RIGHT: Workspace */}
         <BentoBox className="workspace-bento">
           
+          {errorMessage && (
+            <div style={{
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              color: '#ef4444',
+              padding: '12px 16px',
+              borderRadius: '8px',
+              marginBottom: '16px',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              fontSize: '14px',
+              lineHeight: '1.4'
+            }}>
+              <strong>Error: </strong> {errorMessage}
+            </div>
+          )}
+
           {/* View 1: Initial Form */}
           {!draft && !isLoading && (
             <div className="workspace-form">
@@ -299,7 +321,6 @@ const ProposalAgent = () => {
               
               <div className="document-header">
                 <div className="header-top-row">
-                  {/* Title and Toggle grouped tightly together */}
                   <div className="title-context-group">
                     <h3 style={{ color: 'var(--text-primary)', margin: 0 }}>{jobTitle}</h3>
                     <button 
@@ -311,7 +332,6 @@ const ProposalAgent = () => {
                   </div>
                   
                   <div className="header-actions">
-                    {/* Status Indicators */}
                     <div className="save-status-indicator">
                       {isSaving && <span style={{ color: 'var(--text-secondary)' }}>Saving...</span>}
                       {showSavedToast && !isSaving && <span style={{ color: '#2ea043' }}>✓ Saved</span>}
@@ -319,7 +339,6 @@ const ProposalAgent = () => {
                   </div>
                 </div>
 
-                {/* Collapsible Job Context */}
                 {isContextExpanded && (
                   <div className="context-collapse-content">
                     <p className="context-label">Original Job Description:</p>
@@ -336,7 +355,6 @@ const ProposalAgent = () => {
                   </div>
                 )}
                 
-                {/* Render Textarea OR Diff Viewer */}
                 {pendingDraft ? (
                   showDiff ? renderDiff() : (
                     <textarea 
@@ -358,7 +376,6 @@ const ProposalAgent = () => {
                 )}
               </div>
 
-              {/* Action Bars */}
               {pendingDraft ? (
                 <div className="diff-action-bar">
                   <div className="diff-view-toggles">
