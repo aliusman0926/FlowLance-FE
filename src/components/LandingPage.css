@@ -513,7 +513,7 @@
   left: 62px;
   width: 260px;
   padding: 1rem;
-  animation: widgetFloatA 6.8s ease-in-out infinite;
+  animation: widgetFloatA 4.8s ease-in-out infinite;
 }
 
 .stage-widget-gigs {
@@ -521,7 +521,7 @@
   right: 58px;
   width: 250px;
   padding: 1rem;
-  animation: widgetFloatB 7.4s ease-in-out infinite;
+  animation: widgetFloatB 5.4s ease-in-out infinite;
 }
 
 .stage-widget-ai {
@@ -529,7 +529,7 @@
   left: 110px;
   width: 300px;
   padding: 1rem;
-  animation: widgetFloatB 8s ease-in-out infinite;
+  animation: widgetFloatB 6s ease-in-out infinite;
 }
 
 .stage-widget-ring {
@@ -538,7 +538,7 @@
   width: 210px;
   padding: 1.1rem;
   text-align: center;
-  animation: widgetFloatA 7.2s ease-in-out infinite;
+  animation: widgetFloatA 6.2s ease-in-out infinite;
 }
 
 .stage-widget-head {
