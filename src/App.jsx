@@ -107,7 +107,7 @@ const items = [
     }
   ];
 
-function ProtectedLayout({ onLogout, theme, onToggleTheme }) {
+function ProtectedLayout({ onLogout, theme, onToggleTheme, username }) {
   return (
     <div className="app-container">
       <CardNav
@@ -121,6 +121,7 @@ function ProtectedLayout({ onLogout, theme, onToggleTheme }) {
         ease="power3.out"
         theme={theme}
         onToggleTheme={onToggleTheme}
+        username={username}
         onLogout={onLogout}
       />
       <main className="app-content">
@@ -267,6 +268,7 @@ function App() {
               onLogout={handleLogout}
               theme={theme}
               onToggleTheme={handleToggleTheme}
+              username={auth.user?.username}
             />
           ) : <Navigate to="/login" />
         }

@@ -1,10 +1,13 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 // use your own icon import if react-icons is not available
 import { GoArrowUpRight } from 'react-icons/go';
-import { TbMoonStars, TbSunHigh } from 'react-icons/tb';
+import { TbChevronDown, TbMoonStars, TbSunHigh, TbUserCircle } from 'react-icons/tb';
 import { Link } from 'react-router-dom';
 import './CardNav.css';
+
+const FIVERR_LOGIN_URL = 'https://www.fiverr.com/login';
+const UPWORK_LOGIN_URL = 'https://www.upwork.com/ab/account-security/login';
 
 const CardNav = ({
   logo,
@@ -18,13 +21,16 @@ const CardNav = ({
   buttonTextColor,
   theme = 'dark',
   onToggleTheme,
+  username,
   onLogout
 }) => {
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const navRef = useRef(null);
   const cardsRef = useRef([]);
   const tlRef = useRef(null);
+  const accountMenuRef = useRef(null);
   const nextTheme = theme === 'dark' ? 'light' : 'dark';
 
   const navStyles = {
@@ -128,9 +134,40 @@ const CardNav = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded]);
 
+  useEffect(() => {
+    if (!isAccountMenuOpen) {
+      return undefined;
+    }
+
+    const handlePointerDown = (event) => {
+      if (!accountMenuRef.current?.contains(event.target)) {
+        setIsAccountMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isAccountMenuOpen]);
+
   const toggleMenu = () => {
     const tl = tlRef.current;
     if (!tl) return;
+
+    setIsAccountMenuOpen(false);
+
     if (!isExpanded) {
       setIsHamburgerOpen(true);
       setIsExpanded(true);
@@ -146,9 +183,26 @@ const CardNav = ({
     if (el) cardsRef.current[i] = el;
   };
 
+  const handleAccountToggle = () => {
+    setIsAccountMenuOpen(currentValue => !currentValue);
+  };
+
+  const handleAccountLinkClick = () => {
+    setIsAccountMenuOpen(false);
+  };
+
+  const handleLogoutClick = () => {
+    setIsAccountMenuOpen(false);
+    onLogout?.();
+  };
+
   return (
     <div className={`card-nav-container ${className}`}>
-      <nav ref={navRef} className={`card-nav ${isExpanded ? 'open' : ''}`} style={navStyles}>
+      <nav
+        ref={navRef}
+        className={`card-nav ${isExpanded ? 'open' : ''} ${isAccountMenuOpen ? 'account-open' : ''}`}
+        style={navStyles}
+      >
         <div className="card-nav-top">
           <div
             className={`hamburger-menu ${isHamburgerOpen ? 'open' : ''}`}
@@ -188,13 +242,68 @@ const CardNav = ({
               </span>
             </button>
 
-            <button
-              type="button"
-              className="card-nav-cta-button"
-              onClick={onLogout}
-            >
-              LogOut
-            </button>
+            <div className="card-nav-account" ref={accountMenuRef}>
+              <button
+                type="button"
+                className={`card-nav-account-button ${isAccountMenuOpen ? 'is-open' : ''}`}
+                onClick={handleAccountToggle}
+                aria-haspopup="menu"
+                aria-expanded={isAccountMenuOpen}
+                aria-label="Open account menu"
+              >
+                <TbUserCircle className="card-nav-account-icon" aria-hidden="true" />
+                <TbChevronDown className="card-nav-account-chevron" aria-hidden="true" />
+              </button>
+
+              {isAccountMenuOpen && (
+                <div className="card-nav-account-dropdown" role="menu" aria-label="Account menu">
+                  <div className="card-nav-account-greeting">
+                    <span className="card-nav-account-greeting-label">Hi, {username || 'User'}</span>
+                  </div>
+
+                  <button type="button" className="card-nav-account-item is-disabled" disabled>
+                    <span>Upload New Resume</span>
+                    <span className="card-nav-account-item-note">Coming soon</span>
+                  </button>
+
+                  <a
+                    className="card-nav-account-item"
+                    href={FIVERR_LOGIN_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    role="menuitem"
+                    onClick={handleAccountLinkClick}
+                  >
+                    <span>Connect to Fiverr</span>
+                  </a>
+
+                  <a
+                    className="card-nav-account-item"
+                    href={UPWORK_LOGIN_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    role="menuitem"
+                    onClick={handleAccountLinkClick}
+                  >
+                    <span>Connect to Upwork</span>
+                  </a>
+
+                  <button type="button" className="card-nav-account-item is-disabled" disabled>
+                    <span>Account Settings</span>
+                    <span className="card-nav-account-item-note">Coming soon</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="card-nav-account-item is-danger"
+                    role="menuitem"
+                    onClick={handleLogoutClick}
+                  >
+                    <span>Logout</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

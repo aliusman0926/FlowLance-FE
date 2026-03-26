@@ -216,7 +216,7 @@ function SummaryDashboard({ user }) {
         >
           <div className="card-head">
             <p className="label">Gig pipeline</p>
-            <p className="muted">Open → Completed &rarr;</p> {/* Added arrow hint */}
+            <p className="muted">To-Do List &rarr;</p> {/* Added arrow hint */}
           </div>
           <div className="gig-stats">
             {Object.entries(gigStatusCounts).map(([status, count]) => (

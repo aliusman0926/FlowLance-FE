@@ -1,13 +1,11 @@
 .card-nav-container {
-  position: absolute;
+  position: sticky;
   top: 0.5em;
-  left: 50%;
-  height: auto;
-  transform: translateX(-50%);
   width: 90%;
-  max-width: auto;
+  margin: 0.5em auto 0.85rem;
   z-index: 99;
   box-sizing: border-box;
+  align-self: center;
 }
 
 .card-nav {
@@ -21,6 +19,10 @@
   position: relative;
   overflow: hidden;
   will-change: height;
+}
+
+.card-nav.account-open {
+  overflow: visible !important;
 }
 
 .card-nav-top {
@@ -88,6 +90,8 @@
   align-items: center;
   gap: 0.65rem;
   margin-left: auto;
+  position: relative;
+  z-index: 3;
 }
 
 .card-nav-theme-toggle {
@@ -161,21 +165,133 @@
   stroke-width: 1.9;
 }
 
-.card-nav-cta-button {
-  font-family: 'Satoshi', sans-serif;
-  background-color: var(--card-nav-button-bg, #111);
-  color: var(--card-nav-button-text, white);
-  border: none;
-  border-radius: calc(0.75rem - 0.35rem);
-  padding: 0 1rem;
-  height: 60%;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+.card-nav-account {
+  position: relative;
 }
 
-.card-nav-cta-button:hover {
-  background-color: var(--nav-button-hover);
+.card-nav-account-button {
+  font-family: var(--font-sans);
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid transparent;
+  border-radius: calc(0.75rem - 0.35rem);
+  width: 64px;
+  height: 40px;
+  padding: 0 0.45rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.2s ease, transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.card-nav-account-button:hover,
+.card-nav-account-button.is-open {
+  background-color: var(--nav-toggle-bg);
+  border-color: var(--nav-toggle-border);
+}
+
+.card-nav-account-button:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.card-nav-account-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.card-nav-account-chevron {
+  width: 14px;
+  height: 14px;
+  color: var(--text-secondary);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.card-nav-account-button.is-open .card-nav-account-chevron {
+  transform: rotate(180deg);
+  color: var(--text-primary);
+}
+
+.card-nav-account-dropdown {
+  position: absolute;
+  top: calc(100% + 0.65rem);
+  right: 0;
+  width: 260px;
+  padding: 0.4rem;
+  border: 1px solid var(--nav-border);
+  border-radius: 0.9rem;
+  background: var(--card-nav-base, white);
+  box-shadow: var(--nav-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  z-index: 4;
+}
+
+.card-nav-account-greeting {
+  padding: 0.85rem 0.9rem 0.7rem;
+  border-bottom: 1px solid var(--nav-border);
+  margin-bottom: 0.2rem;
+}
+
+.card-nav-account-greeting-label {
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.card-nav-account-item {
+  width: 100%;
+  border: none;
+  border-radius: 0.7rem;
+  background: transparent;
+  color: var(--text-primary);
+  text-decoration: none;
+  padding: 0.78rem 0.9rem;
+  font-family: var(--font-sans);
+  font-size: 0.94rem;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.card-nav-account-item:hover {
+  background: var(--surface-subtle);
+}
+
+.card-nav-account-item:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: -2px;
+}
+
+.card-nav-account-item.is-disabled {
+  color: var(--text-secondary);
+  background: transparent;
+  cursor: not-allowed;
+}
+
+.card-nav-account-item.is-disabled:hover {
+  background: transparent;
+}
+
+.card-nav-account-item-note {
+  font-size: 0.77rem;
+  color: var(--text-secondary);
+}
+
+.card-nav-account-item.is-danger {
+  color: #ffb19a;
+}
+
+[data-theme='light'] .card-nav-account-item.is-danger {
+  color: #a24021;
 }
 
 .card-nav-content {
@@ -249,7 +365,9 @@
 @media (max-width: 768px) {
   .card-nav-container {
     width: 90%;
-    top: 1.2em;
+    top: 0.75em;
+    margin-top: 0.75em;
+    margin-bottom: 0.65rem;
   }
 
   .card-nav-top {
@@ -277,8 +395,19 @@
     height: 38px;
   }
 
-  .card-nav-cta-button {
-    display: none;
+  .card-nav-account-button {
+    width: 56px;
+    height: 38px;
+  }
+
+  .card-nav-account-icon {
+    width: 21px;
+    height: 21px;
+  }
+
+  .card-nav-account-dropdown {
+    width: min(280px, 88vw);
+    right: 0;
   }
 
   .card-nav-content {

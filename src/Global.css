@@ -264,11 +264,7 @@ html {
 .app-content {
   flex-grow: 1;
   width: 100%;
-  padding-top: 60px;
-  /* You might add padding here if CardNav is not 'sticky' 
-     but CardNav seems to be a self-contained component.
-     Let's start without padding and add it if needed.
-  */
+  padding-top: 0;
 }
 
 /* === CALENDAR STYLES === */
