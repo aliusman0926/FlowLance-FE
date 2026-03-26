@@ -24,6 +24,10 @@ import AnalyticsDashboard from './components/Agents/Analytics/AnalyticsDashboard
 // Import Global CSS
 import './Global.css';
 
+const CARD_NAV_POSITION_STORAGE_KEY = 'flowlanceCardNavPosition';
+const MOBILE_CARD_NAV_QUERY = '(max-width: 768px)';
+const VALID_CARD_NAV_POSITIONS = new Set(['top', 'bottom', 'left', 'right']);
+
 // ... AuthCallback component (no changes) ...
 function AuthCallback({ onLogin }) {
   // *** FIX 2: Callback logic moved here from GoogleAuth.jsx ***
@@ -108,26 +112,90 @@ const items = [
   ];
 
 function ProtectedLayout({ onLogout, theme, onToggleTheme, username }) {
+  const [navPosition, setNavPosition] = useState(() => {
+    if (typeof window === 'undefined') {
+      return 'top';
+    }
+
+    const savedPosition = window.localStorage.getItem(CARD_NAV_POSITION_STORAGE_KEY);
+    return VALID_CARD_NAV_POSITIONS.has(savedPosition) ? savedPosition : 'top';
+  });
+  const [isMobileLayout, setIsMobileLayout] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    return window.matchMedia(MOBILE_CARD_NAV_QUERY).matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia(MOBILE_CARD_NAV_QUERY);
+    const handleChange = (event) => {
+      setIsMobileLayout(event.matches);
+    };
+
+    setIsMobileLayout(mediaQuery.matches);
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.setItem(CARD_NAV_POSITION_STORAGE_KEY, navPosition);
+  }, [navPosition]);
+
+  const effectiveNavPosition = isMobileLayout ? 'top' : navPosition;
+  const appContainerClassName = `app-container app-container--${effectiveNavPosition}`;
+  const cardNavElement = (
+    <CardNav
+      logo={theme === 'light' ? logoDark : logo}
+      logoAlt="Company Logo"
+      items={items}
+      baseColor="var(--nav-base-color)"
+      menuColor="var(--nav-menu-color)"
+      buttonBgColor="var(--nav-button-bg)"
+      buttonTextColor="var(--nav-button-text)"
+      ease="power3.out"
+      theme={theme}
+      onToggleTheme={onToggleTheme}
+      username={username}
+      onLogout={onLogout}
+      position={effectiveNavPosition}
+      onPositionChange={setNavPosition}
+    />
+  );
+  const mainContent = (
+    <main className="app-content">
+      <Outlet />
+    </main>
+  );
+
   return (
-    <div className="app-container">
-      <CardNav
-        logo={theme === 'light' ? logoDark : logo}
-        logoAlt="Company Logo"
-        items={items}
-        baseColor="var(--nav-base-color)"
-        menuColor="var(--nav-menu-color)"
-        buttonBgColor="var(--nav-button-bg)"
-        buttonTextColor="var(--nav-button-text)"
-        ease="power3.out"
-        theme={theme}
-        onToggleTheme={onToggleTheme}
-        username={username}
-        onLogout={onLogout}
-      />
-      <main className="app-content">
-        {/* Child routes (like Dashboard) will render here */}
-        <Outlet />
-      </main>
+    <div className={appContainerClassName}>
+      {effectiveNavPosition === 'bottom' ? (
+        <>
+          {mainContent}
+          {cardNavElement}
+        </>
+      ) : (
+        <>
+          {cardNavElement}
+          {mainContent}
+        </>
+      )}
     </div>
   );
 }

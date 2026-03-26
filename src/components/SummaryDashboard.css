@@ -340,6 +340,22 @@
   grid-column: span 2;
 }
 
+.app-container--left .summary-dashboard .bento-grid,
+.app-container--right .summary-dashboard .bento-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.app-container--left .summary-dashboard .balance-card,
+.app-container--left .summary-dashboard .gig-health,
+.app-container--left .summary-dashboard .transactions-card,
+.app-container--left .summary-dashboard .milestones-card,
+.app-container--right .summary-dashboard .balance-card,
+.app-container--right .summary-dashboard .gig-health,
+.app-container--right .summary-dashboard .transactions-card,
+.app-container--right .summary-dashboard .milestones-card {
+  grid-column: span 1;
+}
+
 @media (max-width: 900px) {
   .balance-card,
   .gig-health,

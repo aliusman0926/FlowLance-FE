@@ -6,10 +6,35 @@
   z-index: 99;
   box-sizing: border-box;
   align-self: center;
+  transition: transform 0.18s ease;
+}
+
+.card-nav-container--top {
+  margin: 0.5em auto 0rem;
+}
+
+.card-nav-container--bottom {
+  top: auto;
+  bottom: 0.5em;
+  margin: 0.85rem auto 0.5rem;
+}
+
+.card-nav-container--left,
+.card-nav-container--right {
+  width: auto;
+  height: calc(100vh - 1rem);
+  margin: 0.5rem;
+  align-self: stretch;
+}
+
+.card-nav-container.is-dragging {
+  z-index: 140;
+  transition: none;
 }
 
 .card-nav {
   display: block;
+  width: 100%;
   height: 60px;
   padding: 0;
   background-color: var(--card-nav-base, white);
@@ -18,11 +43,17 @@
   box-shadow: var(--nav-shadow);
   position: relative;
   overflow: hidden;
-  will-change: height;
+  will-change: height, width;
 }
 
 .card-nav.account-open {
   overflow: visible !important;
+}
+
+.card-nav--left,
+.card-nav--right {
+  width: 60px;
+  height: calc(100vh - 1rem);
 }
 
 .card-nav-top {
@@ -36,17 +67,46 @@
   justify-content: space-between;
   padding: 0rem 0.45rem 0.55rem 1.1rem;
   z-index: 2;
+  cursor: grab;
+}
+
+.card-nav-container.is-dragging .card-nav-top {
+  cursor: grabbing;
+}
+
+.card-nav--bottom .card-nav-top {
+  top: auto;
+  bottom: 0;
+}
+
+.card-nav--left .card-nav-top,
+.card-nav--right .card-nav-top {
+  top: 0;
+  bottom: 0;
+  height: auto;
+  width: 60px;
+  padding: 0.45rem 0.2rem 0.55rem;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-nav--right .card-nav-top {
+  left: auto;
+  right: 0;
 }
 
 .hamburger-menu {
   height: 100%;
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   gap: 6px;
   color: var(--card-nav-menu, #000);
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 
 .hamburger-menu:hover .hamburger-line {
@@ -72,6 +132,12 @@
   transform: translateY(-4px) rotate(-45deg);
 }
 
+.card-nav--left .hamburger-menu,
+.card-nav--right .hamburger-menu {
+  height: auto;
+  min-height: 44px;
+}
+
 .logo-container {
   display: flex;
   align-items: center;
@@ -81,8 +147,43 @@
   transform: translate(-60%, -63%);
 }
 
+.card-nav--left .logo-container,
+.card-nav--right .logo-container {
+  position: static;
+  transform: none;
+  justify-content: center;
+}
+
+.card-nav-logo-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-nav-top button,
+.card-nav-top a {
+  cursor: pointer;
+}
+
 .logo {
   height: 35px;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.card-nav--left .logo,
+.card-nav--right .logo {
+  height: 35px;
+  width: auto;
+  max-width: none;
+}
+
+.card-nav--left .logo {
+  transform: rotate(-90deg);
+}
+
+.card-nav--right .logo {
+  transform: rotate(90deg);
 }
 
 .card-nav-actions {
@@ -92,6 +193,13 @@
   margin-left: auto;
   position: relative;
   z-index: 3;
+}
+
+.card-nav--left .card-nav-actions,
+.card-nav--right .card-nav-actions {
+  margin-left: 0;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .card-nav-theme-toggle {
@@ -165,6 +273,34 @@
   stroke-width: 1.9;
 }
 
+.card-nav--left .card-nav-theme-toggle,
+.card-nav--right .card-nav-theme-toggle {
+  min-width: 42px;
+  width: 42px;
+  height: 76px;
+  padding: 0.16rem;
+}
+
+.card-nav--left .card-nav-theme-toggle-track,
+.card-nav--right .card-nav-theme-toggle-track {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
+  min-height: 64px;
+}
+
+.card-nav--left .card-nav-theme-toggle-thumb,
+.card-nav--right .card-nav-theme-toggle-thumb {
+  left: 2px;
+  right: 2px;
+  width: auto;
+  height: calc(50% - 2px);
+}
+
+.card-nav--left .card-nav-theme-toggle.is-light .card-nav-theme-toggle-thumb,
+.card-nav--right .card-nav-theme-toggle.is-light .card-nav-theme-toggle-thumb {
+  transform: translateY(calc(100% + 2px));
+}
+
 .card-nav-account {
   position: relative;
 }
@@ -215,11 +351,20 @@
   color: var(--text-primary);
 }
 
+.card-nav--left .card-nav-account-button,
+.card-nav--right .card-nav-account-button {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  flex-direction: column;
+  gap: 0;
+}
+
 .card-nav-account-dropdown {
   position: absolute;
   top: calc(100% + 0.65rem);
   right: 0;
-  width: 260px;
+  width: min(260px, calc(100vw - 2rem));
   padding: 0.4rem;
   border: 1px solid var(--nav-border);
   border-radius: 0.9rem;
@@ -229,6 +374,24 @@
   flex-direction: column;
   gap: 0.2rem;
   z-index: 4;
+}
+
+.card-nav--bottom .card-nav-account-dropdown {
+  top: auto;
+  bottom: calc(100% + 0.65rem);
+}
+
+.card-nav--left .card-nav-account-dropdown {
+  top: auto;
+  bottom: 0;
+  left: calc(100% + 0.75rem);
+  right: auto;
+}
+
+.card-nav--right .card-nav-account-dropdown {
+  top: auto;
+  bottom: 0;
+  right: calc(100% + 0.75rem);
 }
 
 .card-nav-account-greeting {
@@ -300,13 +463,45 @@
   right: 0;
   top: 60px;
   bottom: 0;
-  padding: 1.5rem 0.5rem 0.5rem 0.5rem;
+  padding: 1.5rem 0.5rem 0.5rem;
   display: flex;
   align-items: flex-end;
   gap: 12px;
   visibility: hidden;
   pointer-events: none;
   z-index: 1;
+}
+
+.card-nav--bottom .card-nav-content {
+  top: 0;
+  bottom: 60px;
+  padding: 0.5rem 0.5rem 1.35rem;
+  align-items: stretch;
+}
+
+.card-nav--left .card-nav-content,
+.card-nav--right .card-nav-content {
+  top: 0;
+  bottom: 0;
+  width: min(320px, calc(100vw - 7rem));
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.card-nav--left .card-nav-content {
+  left: 60px;
+  right: auto;
+  padding-left: 0;
+}
+
+.card-nav--right .card-nav-content {
+  left: auto;
+  right: 60px;
+  padding-right: 0;
 }
 
 .card-nav.open .card-nav-content {
@@ -327,10 +522,22 @@
   user-select: none;
 }
 
+.card-nav--left .nav-card,
+.card-nav--right .nav-card {
+  height: auto;
+  min-height: 120px;
+  flex: 0 0 auto;
+}
+
 .nav-card-label {
   font-weight: 400;
   font-size: 22px;
   letter-spacing: -0.5px;
+}
+
+.card-nav--left .nav-card-label,
+.card-nav--right .nav-card-label {
+  font-size: 20px;
 }
 
 .nav-card-links {
@@ -368,6 +575,17 @@
     top: 0.75em;
     margin-top: 0.75em;
     margin-bottom: 0.65rem;
+    bottom: auto;
+  }
+
+  .card-nav-drag-handle {
+    display: none;
+  }
+
+  .card-nav-logo-link,
+  .card-nav-top,
+  .card-nav-top:active {
+    cursor: pointer;
   }
 
   .card-nav-top {
@@ -408,6 +626,9 @@
   .card-nav-account-dropdown {
     width: min(280px, 88vw);
     right: 0;
+    top: calc(100% + 0.65rem);
+    bottom: auto;
+    left: auto;
   }
 
   .card-nav-content {

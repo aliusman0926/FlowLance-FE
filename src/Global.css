@@ -256,15 +256,49 @@ html {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+.app-container--left,
+.app-container--right {
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.app-container--right {
+  flex-direction: row-reverse;
 }
 
 /* This ensures your main page content
   is separate from the CardNav.
 */
 .app-content {
-  flex-grow: 1;
+  flex: 1 1 auto;
   width: 100%;
+  min-width: 0;
   padding-top: 0;
+  overflow-x: hidden;
+}
+
+.app-container--left .app-content,
+.app-container--right .app-content {
+  flex: 1 1 0;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .app-container,
+  .app-container--left,
+  .app-container--right {
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .app-content {
+    width: 100%;
+  }
 }
 
 /* === CALENDAR STYLES === */

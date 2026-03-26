@@ -198,7 +198,7 @@ function ExpenseSummary() {
 
       {error && <div className="summary-error">{error}</div>}
 
-      <div className="bento-grid chart-grid">
+      <div className="expense-summary-grid">
         <ChartCard title="Credit Distribution" label="Income mix" data={creditData} />
         <ChartCard title="Debit Distribution" label="Expense mix" data={debitData} colors={DEBIT_COLORS} />
       </div>
@@ -215,7 +215,7 @@ function ExpenseSummary() {
         {transactions.length === 0 ? (
           <div className="empty-chart">No transactions recorded yet.</div>
         ) : (
-          <div className="transaction-columns">
+          <div className="expense-summary-columns">
             <div className="transaction-column credit-column">
               <div className="column-head">
                 <div>

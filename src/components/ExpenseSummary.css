@@ -1,12 +1,18 @@
 .expense-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   padding: 2rem 1.5rem 3rem;
+  width: min(100%, 1400px);
   max-width: 1400px;
+  min-width: 0;
   margin: 0 auto;
 }
 
-.chart-grid {
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+.expense-summary-grid {
+  display: flex;
   margin-bottom: 1rem;
+  gap: 1rem;
+  align-items: stretch;
 }
 
 .chart-card {
@@ -73,10 +79,23 @@
   gap: 1.25rem;
 }
 
-.transaction-columns {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+.expense-summary-columns {
+  display: flex;
   gap: 1rem;
+  align-items: stretch;
+}
+
+.expense-summary-grid > *,
+.expense-summary-columns > * {
+  flex: 0 0 calc((100% - 1rem) / 2);
+  max-width: calc((100% - 1rem) / 2);
+  min-width: 0;
+}
+
+.app-container--left .expense-summary,
+.app-container--right .expense-summary {
+  width: 100%;
+  max-width: none;
 }
 
 .transaction-column {
@@ -197,7 +216,7 @@
   color: #fca5a5;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .category-header {
     flex-direction: column;
     align-items: flex-start;
