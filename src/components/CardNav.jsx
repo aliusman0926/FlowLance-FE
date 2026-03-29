@@ -4,6 +4,8 @@ import { GoArrowUpRight } from 'react-icons/go';
 import { TbChevronDown, TbMoonStars, TbSunHigh, TbUserCircle } from 'react-icons/tb';
 import { Link } from 'react-router-dom';
 import './CardNav.css';
+import Modal from './Modal';
+import ResumeManager from './Agents/ResumeManager/ResumeManager';
 
 const FIVERR_LOGIN_URL = 'https://www.fiverr.com/login';
 const UPWORK_LOGIN_URL = 'https://www.upwork.com/ab/account-security/login';
@@ -53,6 +55,7 @@ const CardNav = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === 'undefined') {
@@ -518,9 +521,16 @@ const CardNav = ({
                     <span className="card-nav-account-greeting-label">Hi, {username || 'User'}</span>
                   </div>
 
-                  <button type="button" className="card-nav-account-item is-disabled" disabled>
-                    <span>Upload New Resume</span>
-                    <span className="card-nav-account-item-note">Coming soon</span>
+                  <button 
+                    type="button" 
+                    className="card-nav-account-item"
+                    onClick={() => {
+                      // Note: your state is called setIsAccountMenuOpen instead of setIsAccountOpen
+                      setIsAccountMenuOpen(false); 
+                      setIsResumeModalOpen(true);
+                    }}
+                  >
+                    <span>Manage Resumes</span>
                   </button>
 
                   <a
@@ -589,6 +599,17 @@ const CardNav = ({
             </div>
           ))}
         </div>
+
+      {isResumeModalOpen && (
+          <Modal 
+            isOpen={isResumeModalOpen} 
+            onClose={() => setIsResumeModalOpen(false)} 
+            title="AI Memory: Resume Management"
+          >
+            <ResumeManager />
+          </Modal>
+        )}
+
       </nav>
     </div>
   );
