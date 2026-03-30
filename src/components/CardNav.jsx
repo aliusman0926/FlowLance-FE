@@ -56,6 +56,7 @@ const CardNav = ({
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
+  const [previewPosition, setPreviewPosition] = useState(null); 
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === 'undefined') {
@@ -301,6 +302,7 @@ const CardNav = ({
 
     setIsDragging(false);
     setDragOffset({ x: 0, y: 0 });
+    setPreviewPosition(null); 
     dragStateRef.current = null;
   }, [isDragging, isMobileViewport]);
 
@@ -308,6 +310,7 @@ const CardNav = ({
     const clearDragState = () => {
       setIsDragging(false);
       setDragOffset({ x: 0, y: 0 });
+      setPreviewPosition(null); 
       dragStateRef.current = null;
     };
 
@@ -333,6 +336,11 @@ const CardNav = ({
       }
 
       setDragOffset({ x: deltaX, y: deltaY });
+
+      if (dragStateRef.current.isActiveDrag) {
+         const nearest = getNearestPosition({ clientX: event.clientX, clientY: event.clientY });
+         setPreviewPosition(nearest);
+      }
     };
 
     const handlePointerUp = (event) => {
@@ -450,168 +458,173 @@ const CardNav = ({
   };
 
   return (
-    <div
-      className={`card-nav-container card-nav-container--${effectivePosition} ${isDragging ? 'is-dragging' : ''} ${className}`.trim()}
-      style={containerStyles}
-    >
-      <nav
-        ref={navRef}
-        className={`card-nav card-nav--${effectivePosition} ${isExpanded ? 'open' : ''} ${isAccountMenuOpen ? 'account-open' : ''}`}
-        style={navStyles}
+    <>
+      {isDragging && previewPosition && (
+        <div className={`card-nav-preview is-visible card-nav-preview--${previewPosition}`} />
+      )}
+
+      <div
+        className={`card-nav-container card-nav-container--${effectivePosition} ${isDragging ? 'is-dragging' : ''} ${className}`.trim()}
+        style={containerStyles}
       >
-        <div ref={railRef} className="card-nav-top" onPointerDown={handleRailPointerDown}>
-          <button
-            type="button"
-            className={`hamburger-menu ${isHamburgerOpen ? 'open' : ''}`}
-            onClick={toggleMenu}
-            aria-label={isExpanded ? 'Close menu' : 'Open menu'}
-          >
-            <div className="hamburger-line" />
-            <div className="hamburger-line" />
-          </button>
-
-          <div className="logo-container">
-            <Link
-              to="/dashboard"
-              className="card-nav-logo-link"
-              aria-label="Go to dashboard"
-              title="Go to dashboard"
-            >
-              <img src={logo} alt={logoAlt} className="logo" draggable="false" />
-            </Link>
-          </div>
-
-          <div className="card-nav-actions">
+        <nav
+          ref={navRef}
+          className={`card-nav card-nav--${effectivePosition} ${isExpanded ? 'open' : ''} ${isAccountMenuOpen ? 'account-open' : ''}`}
+          style={navStyles}
+        >
+          <div ref={railRef} className="card-nav-top" onPointerDown={handleRailPointerDown}>
             <button
               type="button"
-              className={`card-nav-theme-toggle ${theme === 'light' ? '' : 'is-light'}`}
-              onClick={onToggleTheme}
-              role="switch"
-              aria-checked={theme === 'light'}
-              aria-label={`Switch to ${nextTheme} mode`}
-              title={`Switch to ${nextTheme} mode`}
+              className={`hamburger-menu ${isHamburgerOpen ? 'open' : ''}`}
+              onClick={toggleMenu}
+              aria-label={isExpanded ? 'Close menu' : 'Open menu'}
             >
-              <span className="card-nav-theme-toggle-track">
-                <span className="card-nav-theme-toggle-thumb" aria-hidden="true" />
-                <span className={`card-nav-theme-toggle-option ${theme === 'light' ? 'active' : ''}`}>
-                  <TbSunHigh className="card-nav-theme-toggle-icon" aria-hidden="true" />
-                </span>
-                <span className={`card-nav-theme-toggle-option ${theme === 'dark' ? 'active' : ''}`}>
-                  <TbMoonStars className="card-nav-theme-toggle-icon" aria-hidden="true" />
-                </span>
-              </span>
+              <div className="hamburger-line" />
+              <div className="hamburger-line" />
             </button>
 
-            <div className="card-nav-account" ref={accountMenuRef}>
+            <div className="logo-container">
+              <Link
+                to="/dashboard"
+                className="card-nav-logo-link"
+                aria-label="Go to dashboard"
+                title="Go to dashboard"
+              >
+                <img src={logo} alt={logoAlt} className="logo" draggable="false" />
+              </Link>
+            </div>
+
+            <div className="card-nav-actions">
               <button
                 type="button"
-                className={`card-nav-account-button ${isAccountMenuOpen ? 'is-open' : ''}`}
-                onClick={handleAccountToggle}
-                aria-haspopup="menu"
-                aria-expanded={isAccountMenuOpen}
-                aria-label="Open account menu"
+                className={`card-nav-theme-toggle ${theme === 'light' ? '' : 'is-light'}`}
+                onClick={onToggleTheme}
+                role="switch"
+                aria-checked={theme === 'light'}
+                aria-label={`Switch to ${nextTheme} mode`}
+                title={`Switch to ${nextTheme} mode`}
               >
-                <TbUserCircle className="card-nav-account-icon" aria-hidden="true" />
-                <TbChevronDown className="card-nav-account-chevron" aria-hidden="true" />
+                <span className="card-nav-theme-toggle-track">
+                  <span className="card-nav-theme-toggle-thumb" aria-hidden="true" />
+                  <span className={`card-nav-theme-toggle-option ${theme === 'light' ? 'active' : ''}`}>
+                    <TbSunHigh className="card-nav-theme-toggle-icon" aria-hidden="true" />
+                  </span>
+                  <span className={`card-nav-theme-toggle-option ${theme === 'dark' ? 'active' : ''}`}>
+                    <TbMoonStars className="card-nav-theme-toggle-icon" aria-hidden="true" />
+                  </span>
+                </span>
               </button>
 
-              {isAccountMenuOpen && (
-                <div className="card-nav-account-dropdown" role="menu" aria-label="Account menu">
-                  <div className="card-nav-account-greeting">
-                    <span className="card-nav-account-greeting-label">Hi, {username || 'User'}</span>
+              <div className="card-nav-account" ref={accountMenuRef}>
+                <button
+                  type="button"
+                  className={`card-nav-account-button ${isAccountMenuOpen ? 'is-open' : ''}`}
+                  onClick={handleAccountToggle}
+                  aria-haspopup="menu"
+                  aria-expanded={isAccountMenuOpen}
+                  aria-label="Open account menu"
+                >
+                  <TbUserCircle className="card-nav-account-icon" aria-hidden="true" />
+                  <TbChevronDown className="card-nav-account-chevron" aria-hidden="true" />
+                </button>
+
+                {isAccountMenuOpen && (
+                  <div className="card-nav-account-dropdown" role="menu" aria-label="Account menu">
+                    <div className="card-nav-account-greeting">
+                      <span className="card-nav-account-greeting-label">Hi, {username || 'User'}</span>
+                    </div>
+
+                    <button 
+                      type="button" 
+                      className="card-nav-account-item"
+                      onClick={() => {
+                        setIsAccountMenuOpen(false); 
+                        setIsResumeModalOpen(true);
+                      }}
+                    >
+                      <span>Manage Resumes</span>
+                    </button>
+
+                    <a
+                      className="card-nav-account-item"
+                      href={FIVERR_LOGIN_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      role="menuitem"
+                      onClick={handleAccountLinkClick}
+                    >
+                      <span>Connect to Fiverr</span>
+                    </a>
+
+                    <a
+                      className="card-nav-account-item"
+                      href={UPWORK_LOGIN_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      role="menuitem"
+                      onClick={handleAccountLinkClick}
+                    >
+                      <span>Connect to Upwork</span>
+                    </a>
+
+                    <button type="button" className="card-nav-account-item is-disabled" disabled>
+                      <span>Account Settings</span>
+                      <span className="card-nav-account-item-note">Coming soon</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="card-nav-account-item is-danger"
+                      role="menuitem"
+                      onClick={handleLogoutClick}
+                    >
+                      <span>Logout</span>
+                    </button>
                   </div>
-
-                  <button 
-                    type="button" 
-                    className="card-nav-account-item"
-                    onClick={() => {
-                      // Note: your state is called setIsAccountMenuOpen instead of setIsAccountOpen
-                      setIsAccountMenuOpen(false); 
-                      setIsResumeModalOpen(true);
-                    }}
-                  >
-                    <span>Manage Resumes</span>
-                  </button>
-
-                  <a
-                    className="card-nav-account-item"
-                    href={FIVERR_LOGIN_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    role="menuitem"
-                    onClick={handleAccountLinkClick}
-                  >
-                    <span>Connect to Fiverr</span>
-                  </a>
-
-                  <a
-                    className="card-nav-account-item"
-                    href={UPWORK_LOGIN_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    role="menuitem"
-                    onClick={handleAccountLinkClick}
-                  >
-                    <span>Connect to Upwork</span>
-                  </a>
-
-                  <button type="button" className="card-nav-account-item is-disabled" disabled>
-                    <span>Account Settings</span>
-                    <span className="card-nav-account-item-note">Coming soon</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="card-nav-account-item is-danger"
-                    role="menuitem"
-                    onClick={handleLogoutClick}
-                  >
-                    <span>Logout</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div ref={contentRef} className="card-nav-content" aria-hidden={!isExpanded}>
-          {itemsToRender.map((item, index) => (
-            <div
-              key={`${item.label}-${index}`}
-              className="nav-card"
-              ref={setCardRef(index)}
-              style={{ backgroundColor: item.bgColor, color: item.textColor }}
-            >
-              <div className="nav-card-label">{item.label}</div>
-              <div className="nav-card-links">
-                {item.links?.map((linkItem, linkIndex) => (
-                  <a
-                    key={`${linkItem.label}-${linkIndex}`}
-                    className="nav-card-link"
-                    href={linkItem.href}
-                    aria-label={linkItem.ariaLabel}
-                  >
-                    <GoArrowUpRight className="nav-card-link-icon" aria-hidden="true" />
-                    {linkItem.label}
-                  </a>
-                ))}
+                )}
               </div>
             </div>
-          ))}
-        </div>
+          </div>
 
-      {isResumeModalOpen && (
-          <Modal 
-            isOpen={isResumeModalOpen} 
-            onClose={() => setIsResumeModalOpen(false)} 
-            title="AI Memory: Resume Management"
-          >
-            <ResumeManager />
-          </Modal>
-        )}
+          <div ref={contentRef} className="card-nav-content" aria-hidden={!isExpanded}>
+            {itemsToRender.map((item, index) => (
+              <div
+                key={`${item.label}-${index}`}
+                className="nav-card"
+                ref={setCardRef(index)}
+                style={{ backgroundColor: item.bgColor, color: item.textColor }}
+              >
+                <div className="nav-card-label">{item.label}</div>
+                <div className="nav-card-links">
+                  {item.links?.map((linkItem, linkIndex) => (
+                    <a
+                      key={`${linkItem.label}-${linkIndex}`}
+                      className="nav-card-link"
+                      href={linkItem.href}
+                      aria-label={linkItem.ariaLabel}
+                    >
+                      <GoArrowUpRight className="nav-card-link-icon" aria-hidden="true" />
+                      {linkItem.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
 
-      </nav>
-    </div>
+        {isResumeModalOpen && (
+            <Modal 
+              isOpen={isResumeModalOpen} 
+              onClose={() => setIsResumeModalOpen(false)} 
+              title="AI Memory: Resume Management"
+            >
+              <ResumeManager />
+            </Modal>
+          )}
+
+        </nav>
+      </div>
+    </>
   );
 };
 

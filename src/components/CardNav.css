@@ -569,6 +569,50 @@
   opacity: 0.75;
 }
 
+/* Snap Preview Dropzone */
+.card-nav-preview {
+  position: fixed;
+  pointer-events: none;
+  z-index: 98;
+  border: 2px dashed var(--accent-color, #0a7140);
+  background-color: var(--surface-subtle, rgba(255, 255, 255, 0.05));
+  border-radius: 0.75rem;
+  transition: opacity 0.15s ease, top 0.15s ease, left 0.15s ease, width 0.15s ease, height 0.15s ease;
+  opacity: 0;
+}
+
+.card-nav-preview.is-visible {
+  opacity: 1;
+}
+
+.card-nav-preview--top {
+  top: 0.5em;
+  left: 5%;
+  width: 90%;
+  height: 60px;
+}
+
+.card-nav-preview--bottom {
+  bottom: 0.5em;
+  left: 5%;
+  width: 90%;
+  height: 60px;
+}
+
+.card-nav-preview--left {
+  top: 0.5rem;
+  left: 0.5rem;
+  width: 60px;
+  height: calc(100vh - 1rem);
+}
+
+.card-nav-preview--right {
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 60px;
+  height: calc(100vh - 1rem);
+}
+
 @media (max-width: 768px) {
   .card-nav-container {
     width: 90%;
