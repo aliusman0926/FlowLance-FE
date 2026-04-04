@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { GoArrowUpRight } from 'react-icons/go';
 import { TbChevronDown, TbMoonStars, TbSunHigh, TbUserCircle } from 'react-icons/tb';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './CardNav.css';
 import Modal from './Modal';
 import ResumeManager from './Agents/ResumeManager/ResumeManager';
@@ -72,6 +72,7 @@ const CardNav = ({
   const tlRef = useRef(null);
   const accountMenuRef = useRef(null);
   const dragStateRef = useRef(null);
+  const navigate = useNavigate();
   const nextTheme = theme === 'dark' ? 'light' : 'dark';
   const effectivePosition = isMobileViewport ? 'top' : validatedPosition;
   const isVertical = isVerticalPosition(effectivePosition);
@@ -429,6 +430,11 @@ const CardNav = ({
     onLogout?.();
   };
 
+  const handleSettingsClick = () => {
+    setIsAccountMenuOpen(false);
+    navigate('/settings');
+  };
+
   const handleDragStart = (event) => {
     if (isMobileViewport) {
       return;
@@ -567,9 +573,13 @@ const CardNav = ({
                       <span>Connect to Upwork</span>
                     </a>
 
-                    <button type="button" className="card-nav-account-item is-disabled" disabled>
+                    <button
+                      type="button"
+                      className="card-nav-account-item"
+                      role="menuitem"
+                      onClick={handleSettingsClick}
+                    >
                       <span>Account Settings</span>
-                      <span className="card-nav-account-item-note">Coming soon</span>
                     </button>
 
                     <button

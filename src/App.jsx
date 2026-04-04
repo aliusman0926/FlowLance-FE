@@ -16,6 +16,7 @@ import GigBoard from './components/GigBoard';
 import CalendarPage from './components/CalendarPage';
 import SummaryDashboard from './components/SummaryDashboard';
 import ExpenseSummary from './components/ExpenseSummary';
+import SettingsPage from './components/SettingsPage';
 
 // Agents Imports
 import ProposalAgent from './components/Agents/ProposalAgent/ProposalAgent';
@@ -289,6 +290,22 @@ function App() {
     setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'));
   };
 
+  const handleUserUpdate = (updatedUser) => {
+    setAuth((currentAuth) => {
+      if (!currentAuth.token || !currentAuth.user) {
+        return currentAuth;
+      }
+
+      return {
+        ...currentAuth,
+        user: {
+          ...currentAuth.user,
+          ...updatedUser,
+        },
+      };
+    });
+  };
+
   return (
     <Routes>
       <Route
@@ -369,6 +386,16 @@ function App() {
         <Route 
           path="/ai-analytics" 
           element={<AnalyticsDashboard />} 
+        />
+        <Route
+          path="/settings"
+          element={
+            <SettingsPage
+              user={auth.user}
+              onUserUpdate={handleUserUpdate}
+              onLogout={handleLogout}
+            />
+          }
         />
         {/* When we add more pages, they go here. */}
       </Route>
