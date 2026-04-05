@@ -184,11 +184,27 @@ const AnalyticsDashboard = () => {
           </div>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height={260}>
-              <ComposedChart data={personalData.revenueTimeline}>
+              <ComposedChart data={personalData.revenueTimeline} margin={{ top: 15, right: 10, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" opacity={0.5} />
                 <XAxis dataKey="month" stroke="var(--text-muted)" tickLine={false} axisLine={false} />
-                <YAxis yAxisId="left" width={60} stroke="var(--text-muted)" tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
-                <YAxis yAxisId="right" width={40} orientation="right" stroke="var(--text-muted)" tickLine={false} axisLine={false} />
+                <YAxis 
+                  yAxisId="left" 
+                  width={65} 
+                  stroke="var(--text-muted)" 
+                  tickLine={false} 
+                  axisLine={false} 
+                  tickFormatter={(val) => val >= 1000 ? `$${val / 1000}k` : `$${val}`} 
+                />
+                <YAxis 
+                  yAxisId="right" 
+                  width={40} 
+                  orientation="right" 
+                  stroke="var(--text-muted)" 
+                  tickLine={false} 
+                  axisLine={false} 
+                  allowDecimals={false} 
+                />
+                
                 <Tooltip contentStyle={customTooltip} itemStyle={{ color: 'var(--text-color)' }} />
                 <Bar yAxisId="left" dataKey="revenue" name="Revenue" fill="#10b981" radius={[4, 4, 0, 0]} barSize={40} opacity={0.8} />
                 <Line yAxisId="right" type="monotone" dataKey="gigs" name="Gigs Secured" stroke="#059669" strokeWidth={3} dot={{ r: 4, fill: '#059669' }} />
@@ -230,7 +246,6 @@ const AnalyticsDashboard = () => {
           </div>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height={260}>
-              {/* Reduced outerRadius to 55% to stop labels from cutting off */}
               <RadarChart cx="50%" cy="50%" outerRadius="55%" data={market_trends.charts.skills_demand}>
                 <PolarGrid stroke="var(--border-color)" />
                 <PolarAngleAxis dataKey="skill" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} />
@@ -249,7 +264,6 @@ const AnalyticsDashboard = () => {
           </div>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height={260}>
-              {/* Fixed margin and width so numbers aren't clipped */}
               <AreaChart data={market_trends.charts.historical_trend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorJobs" x1="0" y1="0" x2="0" y2="1">
@@ -259,7 +273,6 @@ const AnalyticsDashboard = () => {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" opacity={0.5} />
                 <XAxis dataKey="month" stroke="var(--text-muted)" tickLine={false} axisLine={false} />
-                {/* Formatted to display as '12k' instead of '12000' */}
                 <YAxis width={40} stroke="var(--text-muted)" tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
                 <Tooltip contentStyle={customTooltip} itemStyle={{ color: 'var(--text-color)' }} />
                 <Area type="monotone" dataKey="active_jobs" name="Active Roles" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorJobs)" />
