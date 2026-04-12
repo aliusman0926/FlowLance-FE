@@ -1,53 +1,439 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './GigBoard.css';
-import { FaPlusCircle } from "react-icons/fa";
-import { FaEdit } from "react-icons/fa";
-import { FaCheckCircle } from "react-icons/fa";
-import { FaRegCheckCircle } from "react-icons/fa";
-import { FaTrash } from "react-icons/fa";
-import { TbRefresh } from "react-icons/tb";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import { FaCheckCircle, FaEdit, FaPlusCircle, FaRegCheckCircle, FaTrash } from 'react-icons/fa';
+import { TbRefresh, TbSparkles } from 'react-icons/tb';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import {
   DndContext,
+  DragOverlay,
   PointerSensor,
+  closestCenter,
+  useDroppable,
   useSensor,
   useSensors,
-  closestCenter,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core';
 import {
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { useDroppable } from "@dnd-kit/core";
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
+const GIG_STATUS_OPTIONS = ['Open', 'In Progress', 'Completed', 'Archived'];
+const MILESTONE_STATUS_OPTIONS = ['To Do', 'In Progress', 'Blocked', 'Done'];
+const AI_MODAL_STEPS = ['Setup', 'Generate', 'Review'];
 
-// GigBoard.jsx
+function getInitialAiGigForm() {
+  return {
+    title: '',
+    clientName: '',
+    startDate: '',
+    description: '',
+  };
+}
+
+function AiMilestoneReviewCard({ index, milestone, onFieldChange, onDecisionChange }) {
+  const decisionLabel =
+    milestone.decision === 'accepted'
+      ? 'Accepted'
+      : milestone.decision === 'rejected'
+        ? 'Rejected'
+        : 'Decision Needed';
+
+  return (
+    <div
+      className={`ai-milestone-card decision-${milestone.decision}${
+        Object.keys(milestone.errors || {}).length > 0 ? ' has-errors' : ''
+      }`}
+    >
+      <div className="ai-milestone-card-header">
+        <div>
+          <p className="ai-card-label">Milestone {index + 1}</p>
+          <h4>{milestone.title || `Milestone ${index + 1}`}</h4>
+        </div>
+        <span className={`ai-decision-pill ${milestone.decision}`}>{decisionLabel}</span>
+      </div>
+
+      <div className="ai-decision-actions">
+        <button
+          type="button"
+          className={`ai-decision-button accept${
+            milestone.decision === 'accepted' ? ' active' : ''
+          }`}
+          onClick={() => onDecisionChange(milestone.localId, 'accepted')}
+        >
+          Accept
+        </button>
+        <button
+          type="button"
+          className={`ai-decision-button reject${
+            milestone.decision === 'rejected' ? ' active' : ''
+          }`}
+          onClick={() => onDecisionChange(milestone.localId, 'rejected')}
+        >
+          Reject
+        </button>
+      </div>
+
+      <div className="txn-form-group">
+        <label htmlFor={`${milestone.localId}-title`}>Title</label>
+        <input
+          id={`${milestone.localId}-title`}
+          value={milestone.title}
+          onChange={(event) => onFieldChange(milestone.localId, 'title', event.target.value)}
+        />
+        {milestone.errors.title && <span className="ai-field-error">{milestone.errors.title}</span>}
+      </div>
+
+      <div className="txn-form-group">
+        <label htmlFor={`${milestone.localId}-description`}>Description</label>
+        <textarea
+          id={`${milestone.localId}-description`}
+          value={milestone.description}
+          onChange={(event) =>
+            onFieldChange(milestone.localId, 'description', event.target.value)
+          }
+          className="ai-card-description"
+        />
+      </div>
+
+      <div className="ai-card-grid">
+        <div className="txn-form-group">
+          <label htmlFor={`${milestone.localId}-start-date`}>Start Date</label>
+          <input
+            id={`${milestone.localId}-start-date`}
+            type="date"
+            value={milestone.startDate}
+            onChange={(event) => onFieldChange(milestone.localId, 'startDate', event.target.value)}
+          />
+          {milestone.errors.startDate && (
+            <span className="ai-field-error">{milestone.errors.startDate}</span>
+          )}
+        </div>
+
+        <div className="txn-form-group">
+          <label htmlFor={`${milestone.localId}-due-date`}>Due Date</label>
+          <input
+            id={`${milestone.localId}-due-date`}
+            type="date"
+            value={milestone.dueDate}
+            min={milestone.startDate || undefined}
+            onChange={(event) => onFieldChange(milestone.localId, 'dueDate', event.target.value)}
+          />
+          {milestone.errors.dueDate && (
+            <span className="ai-field-error">{milestone.errors.dueDate}</span>
+          )}
+        </div>
+
+        <div className="txn-form-group">
+          <label htmlFor={`${milestone.localId}-payment`}>Payment Amount</label>
+          <input
+            id={`${milestone.localId}-payment`}
+            type="number"
+            min="0"
+            value={milestone.paymentAmount}
+            onChange={(event) =>
+              onFieldChange(
+                milestone.localId,
+                'paymentAmount',
+                event.target.value === '' ? '' : event.target.value
+              )
+            }
+          />
+          {milestone.errors.paymentAmount && (
+            <span className="ai-field-error">{milestone.errors.paymentAmount}</span>
+          )}
+        </div>
+
+        <div className="txn-form-group">
+          <label htmlFor={`${milestone.localId}-status`}>Status</label>
+          <select
+            id={`${milestone.localId}-status`}
+            value={milestone.status}
+            onChange={(event) => onFieldChange(milestone.localId, 'status', event.target.value)}
+          >
+            {MILESTONE_STATUS_OPTIONS.map((status) => (
+              <option key={status}>{status}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DraggableGig({ gig, children }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: gig._id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`gig-draggable${isDragging ? ' is-dragging' : ''}`}
+      {...attributes}
+      {...listeners}
+    >
+      {children}
+    </div>
+  );
+}
+
+function GigCard({
+  gig,
+  milestoneList,
+  onAddMilestone,
+  onEditGig,
+  onToggleGigComplete,
+  onDeleteGig,
+  onToggleMilestoneDone,
+  onEditMilestone,
+  onDeleteMilestone,
+  isOverlay = false,
+}) {
+  return (
+    <div className={`gig-card${isOverlay ? ' drag-overlay-card' : ''}`}>
+      <div className="gig-card-header">
+        <div>
+          <h3 className="gig-title">{gig.title}</h3>
+          <p className="gig-client">{gig.clientName || '-'}</p>
+          <p className="gig-desc">{gig.description?.slice(0, 120)}</p>
+          {!isOverlay && (
+            <div className="gig-actions">
+              <button className="btn-secondary" onClick={onAddMilestone}>
+                <FaPlusCircle />
+              </button>
+              <button className="btn-secondary" onClick={onEditGig}>
+                <FaEdit />
+              </button>
+              <button className="btn" onClick={onToggleGigComplete}>
+                {gig.status === 'Completed' ? <FaCheckCircle /> : <FaRegCheckCircle />}
+              </button>
+              <button className="btn-danger" onClick={onDeleteGig}>
+                <FaTrash />
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="gig-meta">
+          <div>Value</div>
+          <div className="strong">${Number(gig.totalValue || 0).toFixed(2)}</div>
+          <div className="gig-meta">
+            Due: {gig.dueDate ? new Date(gig.dueDate).toLocaleDateString() : '-'}
+          </div>
+        </div>
+      </div>
+
+      <div className="milestones">
+        {milestoneList.map((milestone) => (
+          <div key={milestone._id} className="milestone">
+            <div>
+              <div className="milestone-title">{milestone.title}</div>
+              <div className="milestone-desc">{milestone.description?.slice(0, 80)}</div>
+              <div className="milestone-meta">
+                {milestone.status} - ${Number(milestone.paymentAmount || 0).toFixed(2)}
+              </div>
+            </div>
+            {!isOverlay && (
+              <div className="milestone-actions">
+                <div className="milestone-actions">
+                  <button
+                    title="Toggle Done"
+                    className="milestone-btn"
+                    onClick={() => onToggleMilestoneDone(milestone)}
+                  >
+                    {milestone.status === 'Done' ? <FaCheckCircle /> : <FaRegCheckCircle />}
+                  </button>
+                  <button
+                    title="Edit"
+                    className="btn-secondary"
+                    onClick={() => onEditMilestone(milestone)}
+                  >
+                    <FaEdit />
+                  </button>
+                  <button
+                    title="Delete"
+                    className="btn-danger"
+                    onClick={() => onDeleteMilestone(milestone._id)}
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DroppableColumn({ id, children }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className="board-column"
+      style={{
+        outline: isOver ? '2px dashed #4CAF50' : 'none',
+        outlineOffset: '4px',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function getDateInputValue(value) {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().split('T')[0];
+}
+
+function getDatePickerValue(value) {
+  const formatted = getDateInputValue(value);
+  return formatted ? new Date(formatted) : null;
+}
+
+function getErrorMessage(error, fallback = 'Something went wrong.') {
+  if (!error) return fallback;
+  if (typeof error === 'string') return error;
+  if (error.message) return error.message;
+  if (error.error) return error.error;
+
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return fallback;
+  }
+}
+
+function normalizeMilestoneStatus(status) {
+  return MILESTONE_STATUS_OPTIONS.includes(status) ? status : 'To Do';
+}
+
+function parsePaymentAmount(value) {
+  if (value === '' || value === null || value === undefined) return 0;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function buildLocalMilestoneId(index) {
+  return `ai-milestone-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function normalizeAiMilestone(milestone, index, gigStartDate) {
+  const startDate =
+    getDateInputValue(milestone?.startDate ?? milestone?.start_date ?? gigStartDate) ||
+    getDateInputValue(gigStartDate);
+  const dueDate =
+    getDateInputValue(
+      milestone?.dueDate ??
+        milestone?.due_date ??
+        milestone?.endDate ??
+        milestone?.end_date ??
+        startDate
+    ) || startDate;
+
+  return {
+    localId: buildLocalMilestoneId(index),
+    title: String(milestone?.title ?? milestone?.name ?? `Milestone ${index + 1}`).trim(),
+    description: String(
+      milestone?.description ?? milestone?.details ?? milestone?.summary ?? ''
+    ).trim(),
+    startDate,
+    dueDate,
+    paymentAmount: parsePaymentAmount(
+      milestone?.paymentAmount ?? milestone?.payment_amount ?? milestone?.amount
+    ),
+    status: normalizeMilestoneStatus(milestone?.status ?? milestone?.state),
+    decision: 'pending',
+    errors: {},
+  };
+}
+
+function validateAiMilestoneDraft(draft) {
+  const errors = {};
+
+  if (!draft.title?.trim()) {
+    errors.title = 'Title is required.';
+  }
+
+  if (!draft.startDate) {
+    errors.startDate = 'Start date is required.';
+  }
+
+  if (!draft.dueDate) {
+    errors.dueDate = 'Due date is required.';
+  }
+
+  if (draft.startDate && draft.dueDate && new Date(draft.dueDate) < new Date(draft.startDate)) {
+    errors.dueDate = 'Due date cannot be before start date.';
+  }
+
+  const paymentAmount = Number(draft.paymentAmount);
+  if (Number.isNaN(paymentAmount) || paymentAmount < 0) {
+    errors.paymentAmount = 'Payment amount cannot be negative.';
+  }
+
+  return errors;
+}
+
+function getAiReviewSummary(drafts) {
+  const pending = drafts.filter((draft) => draft.decision === 'pending').length;
+  const accepted = drafts.filter((draft) => draft.decision === 'accepted').length;
+  const rejected = drafts.filter((draft) => draft.decision === 'rejected').length;
+  const hasAcceptedValidationIssues = drafts.some(
+    (draft) =>
+      draft.decision === 'accepted' && Object.keys(validateAiMilestoneDraft(draft)).length > 0
+  );
+
+  return {
+    pending,
+    accepted,
+    rejected,
+    hasAcceptedValidationIssues,
+  };
+}
+
 export default function GigBoard() {
   const [gigs, setGigs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [activeGigId, setActiveGigId] = useState(null);
   const sensors = useSensors(
-  useSensor(PointerSensor, {
-        activationConstraint: {
+    useSensor(PointerSensor, {
+      activationConstraint: {
         distance: 8,
-        },
+      },
     })
-    );
+  );
 
-  // UI state
-  const [selectedGig, setSelectedGig] = useState(null);
-  const [modalType, setModalType] = useState(null); // 'addGig'|'editGig'|'addMilestone'|'editMilestone'
+  const [modalType, setModalType] = useState(null);
   const [formData, setFormData] = useState({});
-  const [milestones, setMilestones] = useState({}); // map gigId -> array of milestones
+  const [milestones, setMilestones] = useState({});
   const [invoicePrompt, setInvoicePrompt] = useState({
-          open: false,
-          milestoneId: null,
-          clientName: '',
-          freelancerName: ''
-        });
+    open: false,
+    milestoneId: null,
+    clientName: '',
+    freelancerName: '',
+  });
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiStep, setAiStep] = useState('setup');
+  const [aiGigForm, setAiGigForm] = useState(getInitialAiGigForm);
+  const [aiDraftGig, setAiDraftGig] = useState(null);
+  const [aiMilestoneDrafts, setAiMilestoneDrafts] = useState([]);
+  const [aiError, setAiError] = useState('');
+  const aiSessionRef = useRef(0);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
@@ -66,7 +452,7 @@ export default function GigBoard() {
       const res = await fetch('/api/gigs', {
         method: 'POST',
         headers: { ...authHeader(), 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw await res.json();
       return res.json();
@@ -75,7 +461,7 @@ export default function GigBoard() {
       const res = await fetch(`/api/gigs/${id}`, {
         method: 'PUT',
         headers: { ...authHeader(), 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw await res.json();
       return res.json();
@@ -85,11 +471,28 @@ export default function GigBoard() {
       if (!res.ok) throw await res.json();
       return res.json();
     },
+    generateMilestonesAI: async (gigId) => {
+      const res = await fetch(`/api/gigs/${gigId}/generate-milestones`, {
+        method: 'POST',
+        headers: authHeader(),
+      });
+      if (!res.ok) throw await res.json();
+      return res.json();
+    },
     createMilestone: async (gigId, payload) => {
       const res = await fetch(`/api/milestones/gig/${gigId}`, {
         method: 'POST',
         headers: { ...authHeader(), 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw await res.json();
+      return res.json();
+    },
+    bulkCreateMilestones: async (gigId, payload) => {
+      const res = await fetch(`/api/milestones/gig/${gigId}/bulk`, {
+        method: 'POST',
+        headers: { ...authHeader(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw await res.json();
       return res.json();
@@ -98,7 +501,7 @@ export default function GigBoard() {
       const res = await fetch(`/api/milestones/${id}`, {
         method: 'PUT',
         headers: { ...authHeader(), 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw await res.json();
       return res.json();
@@ -107,7 +510,7 @@ export default function GigBoard() {
       const res = await fetch(`/api/milestones/${id}`, { method: 'DELETE', headers: authHeader() });
       if (!res.ok) throw await res.json();
       return res.json();
-    }
+    },
   };
 
   function authHeader() {
@@ -116,7 +519,6 @@ export default function GigBoard() {
 
   useEffect(() => {
     loadGigs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadGigs() {
@@ -125,40 +527,44 @@ export default function GigBoard() {
       const data = await API.fetchGigs();
       setGigs(data);
 
-      // Fetch milestones for each gig in parallel
-      const msPromises = data.map(g => API.fetchMilestones(g._id).then(list => ({ id: g._id, list })).catch(() => ({ id: g._id, list: [] })));
-      const msResults = await Promise.all(msPromises);
-      const msMap = {};
-      msResults.forEach(r => { msMap[r.id] = r.list; });
-      setMilestones(msMap);
+      const milestonePromises = data.map((gig) =>
+        API.fetchMilestones(gig._id)
+          .then((list) => ({ id: gig._id, list }))
+          .catch(() => ({ id: gig._id, list: [] }))
+      );
 
+      const milestoneResults = await Promise.all(milestonePromises);
+      const milestoneMap = {};
+      milestoneResults.forEach((result) => {
+        milestoneMap[result.id] = result.list;
+      });
+      setMilestones(milestoneMap);
       setError(null);
     } catch (err) {
-      setError(err.message || JSON.stringify(err));
+      setError(getErrorMessage(err, 'Failed to load gigs.'));
     } finally {
       setLoading(false);
     }
   }
 
-  // CRUD handlers
   async function handleAddGig(payload) {
     try {
       const newGig = await API.createGig(payload);
-      setGigs(prev => [newGig, ...prev]);
-      setMilestones(prev=> ({ ...prev, [newGig._id]: [] }));
+      setGigs((prev) => [newGig, ...prev]);
+      setMilestones((prev) => ({ ...prev, [newGig._id]: [] }));
       closeModal();
     } catch (err) {
-      alert('Error creating gig: ' + (err.message || JSON.stringify(err)));
+      alert(`Error creating gig: ${getErrorMessage(err)}`);
     }
   }
 
   async function handleUpdateGig(id, payload) {
     try {
       const updated = await API.updateGig(id, payload);
-      setGigs(prev => prev.map(g => g._id === id ? updated : g));
+      setGigs((prev) => prev.map((gig) => (gig._id === id ? updated : gig)));
       closeModal();
     } catch (err) {
-      alert('Error updating gig: ' + (err.message || JSON.stringify(err)));
+      alert(`Error updating gig: ${getErrorMessage(err)}`);
     }
   }
 
@@ -166,31 +572,40 @@ export default function GigBoard() {
     if (!confirm('Delete this gig and all its milestones?')) return;
     try {
       await API.deleteGig(id);
-      setGigs(prev => prev.filter(g => g._id !== id));
-      const copy = { ...milestones }; delete copy[id]; setMilestones(copy);
+      setGigs((prev) => prev.filter((gig) => gig._id !== id));
+      setMilestones((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
     } catch (err) {
-      alert('Error deleting gig: ' + (err.message || JSON.stringify(err)));
+      alert(`Error deleting gig: ${getErrorMessage(err)}`);
     }
   }
 
   async function handleAddMilestone(gigId, payload) {
     try {
       const created = await API.createMilestone(gigId, payload);
-      setMilestones(prev => ({ ...prev, [gigId]: [...(prev[gigId]||[]), created] }));
-      await loadGigs(); // refresh gig totals
+      setMilestones((prev) => ({ ...prev, [gigId]: [...(prev[gigId] || []), created] }));
+      await loadGigs();
       closeModal();
     } catch (err) {
-      alert('Error creating milestone: ' + (err.message || JSON.stringify(err)));
+      alert(`Error creating milestone: ${getErrorMessage(err)}`);
     }
   }
 
   async function handleUpdateMilestone(gigId, id, payload) {
     try {
       const updated = await API.updateMilestone(id, payload);
-      setMilestones(prev => ({ ...prev, [gigId]: prev[gigId].map(m => m._id === id ? updated : m) }));
+      setMilestones((prev) => ({
+        ...prev,
+        [gigId]: (prev[gigId] || []).map((milestone) =>
+          milestone._id === id ? updated : milestone
+        ),
+      }));
       closeModal();
     } catch (err) {
-      alert('Error updating milestone: ' + (err.message || JSON.stringify(err)));
+      alert(`Error updating milestone: ${getErrorMessage(err)}`);
     }
   }
 
@@ -198,73 +613,303 @@ export default function GigBoard() {
     if (!confirm('Delete this milestone?')) return;
     try {
       await API.deleteMilestone(id);
-      setMilestones(prev => ({ ...prev, [gigId]: prev[gigId].filter(m => m._id !== id) }));
+      setMilestones((prev) => ({
+        ...prev,
+        [gigId]: (prev[gigId] || []).filter((milestone) => milestone._id !== id),
+      }));
+      await loadGigs();
     } catch (err) {
-      alert('Error deleting milestone: ' + (err.message || JSON.stringify(err)));
+      alert(`Error deleting milestone: ${getErrorMessage(err)}`);
     }
   }
 
-  // Drag and drop handlers
+  function resetAiModalState() {
+    setAiModalOpen(false);
+    setAiStep('setup');
+    setAiGigForm(getInitialAiGigForm());
+    setAiDraftGig(null);
+    setAiMilestoneDrafts([]);
+    setAiError('');
+  }
+
+  function openAiModal() {
+    resetAiModalState();
+    setAiModalOpen(true);
+  }
+
+  function invalidateAiSession() {
+    aiSessionRef.current += 1;
+  }
+
+  async function cleanupAiDraftGig(draftGigId) {
+    if (!draftGigId) return true;
+
+    try {
+      await API.deleteGig(draftGigId);
+      return true;
+    } catch (cleanupError) {
+      console.error('Failed to cleanup AI draft gig:', cleanupError);
+      return false;
+    }
+  }
+
+  async function closeAiModal() {
+    if (aiStep === 'saving') return;
+
+    invalidateAiSession();
+    const draftGigId = aiDraftGig?._id;
+    resetAiModalState();
+
+    if (draftGigId) {
+      const cleaned = await cleanupAiDraftGig(draftGigId);
+      if (!cleaned) {
+        alert(
+          'The draft gig could not be deleted automatically. Refresh the board and remove it manually if it appears.'
+        );
+        await loadGigs();
+      }
+    }
+  }
+
+  async function handleAiGenerateSubmit(event) {
+    event.preventDefault();
+
+    const sessionId = aiSessionRef.current + 1;
+    aiSessionRef.current = sessionId;
+    let createdGig = null;
+
+    try {
+      setAiError('');
+      setAiStep('generating');
+
+      createdGig = await API.createGig({
+        title: aiGigForm.title,
+        clientName: aiGigForm.clientName,
+        startDate: aiGigForm.startDate,
+        description: aiGigForm.description,
+        status: 'Open',
+      });
+
+      if (aiSessionRef.current !== sessionId) {
+        await cleanupAiDraftGig(createdGig?._id);
+        return;
+      }
+
+      setAiDraftGig(createdGig);
+
+      const generated = await API.generateMilestonesAI(createdGig._id);
+
+      if (aiSessionRef.current !== sessionId) {
+        await cleanupAiDraftGig(createdGig?._id);
+        return;
+      }
+
+      const normalizedDrafts = Array.isArray(generated?.milestones)
+        ? generated.milestones.map((milestone, index) =>
+            normalizeAiMilestone(milestone, index, createdGig.startDate || aiGigForm.startDate)
+          )
+        : [];
+
+      if (!normalizedDrafts.length) {
+        throw new Error('AI did not return any milestones for this gig.');
+      }
+
+      setAiMilestoneDrafts(normalizedDrafts);
+      setAiStep('review');
+    } catch (err) {
+      if (aiSessionRef.current !== sessionId) {
+        if (createdGig?._id) {
+          await cleanupAiDraftGig(createdGig._id);
+        }
+        return;
+      }
+
+      let cleanupFailed = false;
+      if (createdGig?._id) {
+        cleanupFailed = !(await cleanupAiDraftGig(createdGig._id));
+      }
+
+      if (cleanupFailed) {
+        await loadGigs();
+      }
+
+      setAiDraftGig(null);
+      setAiMilestoneDrafts([]);
+      setAiStep('setup');
+      setAiError(
+        cleanupFailed
+          ? `${getErrorMessage(err, 'Unable to generate milestones right now.')} Draft gig cleanup failed.`
+          : getErrorMessage(err, 'Unable to generate milestones right now.')
+      );
+    }
+  }
+
+  function updateAiMilestoneDraft(localId, updates) {
+    setAiMilestoneDrafts((prev) =>
+      prev.map((draft) => {
+        if (draft.localId !== localId) return draft;
+
+        const nextDraft = {
+          ...draft,
+          ...updates,
+        };
+
+        if (Object.prototype.hasOwnProperty.call(updates, 'status')) {
+          nextDraft.status = normalizeMilestoneStatus(updates.status);
+        }
+
+        const shouldValidate =
+          nextDraft.decision === 'accepted' || Object.keys(draft.errors || {}).length > 0;
+
+        return {
+          ...nextDraft,
+          errors: shouldValidate ? validateAiMilestoneDraft(nextDraft) : draft.errors,
+        };
+      })
+    );
+  }
+
+  function handleAiMilestoneFieldChange(localId, field, value) {
+    setAiError('');
+    updateAiMilestoneDraft(localId, { [field]: value });
+  }
+
+  function handleAiMilestoneDecision(localId, decision) {
+    setAiError('');
+    setAiMilestoneDrafts((prev) =>
+      prev.map((draft) => {
+        if (draft.localId !== localId) return draft;
+
+        const nextDraft = {
+          ...draft,
+          decision,
+        };
+
+        return {
+          ...nextDraft,
+          errors: decision === 'accepted' ? validateAiMilestoneDraft(nextDraft) : {},
+        };
+      })
+    );
+  }
+
+  async function handleConfirmAiMilestones() {
+    if (!aiDraftGig?._id) return;
+
+    const reviewedDrafts = aiMilestoneDrafts.map((draft) => ({
+      ...draft,
+      errors: draft.decision === 'accepted' ? validateAiMilestoneDraft(draft) : {},
+    }));
+
+    setAiMilestoneDrafts(reviewedDrafts);
+
+    if (reviewedDrafts.some((draft) => draft.decision === 'pending')) {
+      setAiError('Review every milestone and choose accept or reject before saving.');
+      return;
+    }
+
+    const acceptedDrafts = reviewedDrafts.filter((draft) => draft.decision === 'accepted');
+    if (!acceptedDrafts.length) {
+      setAiError('Accept at least one milestone before saving this gig.');
+      return;
+    }
+
+    if (acceptedDrafts.some((draft) => Object.keys(draft.errors || {}).length > 0)) {
+      setAiError('Fix the highlighted accepted milestones before saving.');
+      return;
+    }
+
+    try {
+      setAiError('');
+      setAiStep('saving');
+
+      await API.bulkCreateMilestones(aiDraftGig._id, {
+        milestones: acceptedDrafts.map(({ localId, decision, errors, ...draft }) => ({
+          ...draft,
+          paymentAmount: parsePaymentAmount(draft.paymentAmount),
+          status: normalizeMilestoneStatus(draft.status),
+        })),
+      });
+
+      invalidateAiSession();
+      resetAiModalState();
+      await loadGigs();
+    } catch (err) {
+      setAiStep('review');
+      setAiError(`Failed to save milestones: ${getErrorMessage(err)}`);
+    }
+  }
+
+  function handleDragStart(event) {
+    setActiveGigId(event.active.id);
+  }
+
+  function handleDragCancel() {
+    setActiveGigId(null);
+  }
+
   async function handleDragEnd(event) {
     const { active, over } = event;
+    setActiveGigId(null);
 
-    // dropped outside any column
     if (!over) return;
 
     const gigId = active.id;
-    const newStatus = over.id; // ✅ this is now column name
+    const newStatus = over.id;
 
-    // Safety check
-    if (!columns.includes(newStatus)) return;
+    if (!GIG_STATUS_OPTIONS.includes(newStatus)) return;
 
-    const gig = gigs.find(g => g._id === gigId);
+    const gig = gigs.find((item) => item._id === gigId);
     if (!gig || gig.status === newStatus) return;
 
-    // Optimistic UI
-    setGigs(prev =>
-        prev.map(g =>
-        g._id === gigId ? { ...g, status: newStatus } : g
-        )
+    setGigs((prev) =>
+      prev.map((item) => (item._id === gigId ? { ...item, status: newStatus } : item))
     );
 
     try {
-        await API.updateGig(gigId, { status: newStatus });
+      await API.updateGig(gigId, { status: newStatus });
     } catch (err) {
-        console.error(err);
-        loadGigs(); // rollback if backend fails
+      console.error(err);
+      loadGigs();
     }
-}
+  }
 
-  // Mark complete toggles
-  async function toggleMilestoneDone(gigId, m) {
-    const newStatus = m.status === 'Done' ? 'To Do' : 'Done';
-    await handleUpdateMilestone(gigId, m._id, { ...m, status: newStatus });
-    
-    // 🔥 Open invoice prompt
+  async function toggleMilestoneDone(gigId, milestone) {
+    const newStatus = milestone.status === 'Done' ? 'To Do' : 'Done';
+    await handleUpdateMilestone(gigId, milestone._id, { ...milestone, status: newStatus });
+
     if (newStatus === 'Done') {
       setInvoicePrompt({
         open: true,
-        milestoneId: m._id,
+        milestoneId: milestone._id,
+        clientName: '',
+        freelancerName: '',
       });
     }
   }
 
-  async function toggleGigComplete(g) {
-    const newStatus = g.status === 'Completed' ? 'Open' : 'Completed';
-    await handleUpdateGig(g._id, { ...g, status: newStatus });
+  async function toggleGigComplete(gig) {
+    const newStatus = gig.status === 'Completed' ? 'Open' : 'Completed';
+    await handleUpdateGig(gig._id, { ...gig, status: newStatus });
   }
 
   function openModal(type, payload = {}) {
     setModalType(type);
     setFormData(payload);
-    setSelectedGig(payload.gig || null);
-    // If payload has gigId use that
-    if (payload.gig && payload.gig._id) setSelectedGig(payload.gig);
   }
-  function closeModal() { setModalType(null); setFormData({}); setSelectedGig(null); }
 
-  // Simple columns based on gig status
-  const columns = ['Open', 'In Progress', 'Completed', 'Archived'];
+  function closeModal() {
+    setModalType(null);
+    setFormData({});
+  }
+
+  const activeGig = gigs.find((gig) => gig._id === activeGigId) || null;
+  const aiReviewSummary = getAiReviewSummary(aiMilestoneDrafts);
+  const aiCanConfirm =
+    aiStep === 'review' &&
+    aiReviewSummary.pending === 0 &&
+    aiReviewSummary.accepted > 0 &&
+    !aiReviewSummary.hasAcceptedValidationIssues;
 
   const getBackendBaseUrl = () => {
     const { protocol, hostname } = window.location;
@@ -273,14 +918,14 @@ export default function GigBoard() {
 
   const generateInvoice = async (milestoneId, clientName, freelancerName) => {
     try {
-      if ( clientName == null || freelancerName == null || clientName.trim() === '' || freelancerName.trim() === '' ) {
+      if (!clientName?.trim() || !freelancerName?.trim()) {
         alert('Please provide both client and freelancer names to generate invoice.');
         return;
       }
 
       const params = new URLSearchParams({
         clientName,
-        freelancerName
+        freelancerName,
       });
 
       const response = await fetch(
@@ -288,8 +933,8 @@ export default function GigBoard() {
         {
           method: 'GET',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         }
       );
 
@@ -309,17 +954,23 @@ export default function GigBoard() {
   return (
     <div className="gig-board">
       <div className="dashboard-hero">
-                    <div>
-                      <p className="eyebrow">Gigs overview</p>
-                      <h1>Project Management</h1>
-                      <p className="subtext">Manage all ongoing and upcoming gigs and milestones.</p>
-                    </div>
-                    <div className='header-actions'>
-                    <button className="ghost-button green-bg" onClick={()=>openModal('addGig')}>+ New Gig</button>
-                    <button className="ghost-button" onClick={loadGigs} disabled={loading}>
-                      {loading ? 'Refreshing…' : <TbRefresh />}
-                    </button>
-                    </div>
+        <div>
+          <p className="eyebrow">Gigs overview</p>
+          <h1>Project Management</h1>
+          <p className="subtext">Manage all ongoing and upcoming gigs and milestones.</p>
+        </div>
+        <div className="header-actions">
+          <button className="ghost-button green-bg" onClick={() => openModal('addGig')}>
+            + New Gig
+          </button>
+          <button className="ghost-button ai-generate-button" onClick={openAiModal}>
+            <TbSparkles />
+            Generate with AI
+          </button>
+          <button className="ghost-button" onClick={loadGigs} disabled={loading}>
+            {loading ? 'Refreshing...' : <TbRefresh />}
+          </button>
+        </div>
       </div>
 
       {error && <div className="text-red-600 mb-4">{error}</div>}
@@ -327,73 +978,270 @@ export default function GigBoard() {
         <div>Loading...</div>
       ) : (
         <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragCancel={handleDragCancel}
+          onDragEnd={handleDragEnd}
         >
-            <div className="board-columns">
-            {columns.map(col => (
-                <DroppableColumn key={col} id={col}>
-                <h2>{col}</h2>
+          <div className="board-columns">
+            {GIG_STATUS_OPTIONS.map((column) => (
+              <DroppableColumn key={column} id={column}>
+                <h2>{column}</h2>
                 <div className="space-y-3">
-                    <SortableContext
-                    items={gigs.filter(g => g.status === col).map(g => g._id)}
+                  <SortableContext
+                    items={gigs.filter((gig) => gig.status === column).map((gig) => gig._id)}
                     strategy={verticalListSortingStrategy}
-                    >
-                    {gigs.filter(g => g.status === col).map(g => (
-                    <DraggableGig key={g._id} gig={g}>
-                    <div className="gig-card">
-                        <div className="gig-card-header">
-                        <div>
-                            <h3 className="gig-title">{g.title}</h3>
-                            <p className="gig-client">{g.clientName || '—'}</p>
-                            <p className="gig-desc">{g.description?.slice(0, 120)}</p>
-                            <div className="gig-actions">
-                            <button className="btn-secondary" onClick={()=>{ openModal('addMilestone', { gigId: g._id, gig: g }); }}><FaPlusCircle /></button>
-                            <button className="btn-secondary" onClick={()=>{ openModal('editGig', g); }}><FaEdit /></button>
-                            <button className="btn" onClick={()=>toggleGigComplete(g)}>{g.status==='Completed'?<FaCheckCircle />:<FaRegCheckCircle />}</button>
-                            <button className="btn-danger" onClick={()=>handleDeleteGig(g._id)}><FaTrash></FaTrash></button>
-                            </div>
-                        </div>
-                        <div className="gig-meta">
-                            <div>Value</div>
-                            <div className="strong">${Number(g.totalValue||0).toFixed(2)}</div>
-                            <div className="gig-meta">Due: {g.dueDate ? new Date(g.dueDate).toLocaleDateString() : '—'}</div>
-                        </div>
-                        </div>
-
-                        {/* Milestones list */}
-                        <div className="milestones">
-                        {(milestones[g._id]||[]).map(m => (
-                            <div key={m._id} className="milestone">
-                            <div>
-                                <div className="milestone-title">{m.title}</div>
-                                <div className="milestone-desc">{m.description?.slice(0, 80)}</div>
-                                <div className="milestone-meta">{m.status} • ${Number(m.paymentAmount||0).toFixed(2)}</div>
-                            </div>
-                            <div className="milestone-actions">
-                                <div className="milestone-actions">
-                                <button title="Toggle Done" className="milestone-btn" onClick={() => toggleMilestoneDone(g._id,m)}>{m.status==='Done'?<FaCheckCircle />:<FaRegCheckCircle />}</button>
-                                <button title="Edit" className="btn-secondary" onClick={()=>openModal('editMilestone', { gigId: g._id, milestone: m })}><FaEdit /></button>
-                                <button title="Delete" className="btn-danger" onClick={()=>handleDeleteMilestone(g._id, m._id)}><FaTrash /></button>
-                                </div>
-                            </div>
-                            </div>
-                        ))}
-                        </div>
-
-                    </div>
-                    </DraggableGig>
-                ))}
-                </SortableContext>
+                  >
+                    {gigs
+                      .filter((gig) => gig.status === column)
+                      .map((gig) => (
+                        <DraggableGig key={gig._id} gig={gig}>
+                          <GigCard
+                            gig={gig}
+                            milestoneList={milestones[gig._id] || []}
+                            onAddMilestone={() =>
+                              openModal('addMilestone', { gigId: gig._id, gig })
+                            }
+                            onEditGig={() => openModal('editGig', gig)}
+                            onToggleGigComplete={() => toggleGigComplete(gig)}
+                            onDeleteGig={() => handleDeleteGig(gig._id)}
+                            onToggleMilestoneDone={(milestone) =>
+                              toggleMilestoneDone(gig._id, milestone)
+                            }
+                            onEditMilestone={(milestone) =>
+                              openModal('editMilestone', { gigId: gig._id, milestone })
+                            }
+                            onDeleteMilestone={(milestoneId) =>
+                              handleDeleteMilestone(gig._id, milestoneId)
+                            }
+                          />
+                        </DraggableGig>
+                      ))}
+                  </SortableContext>
                 </div>
-                </DroppableColumn>
+              </DroppableColumn>
             ))}
-            </div>
+          </div>
+          <DragOverlay>
+            {activeGig ? (
+              <div className="gig-drag-overlay">
+                <GigCard gig={activeGig} milestoneList={milestones[activeGig._id] || []} isOverlay />
+              </div>
+            ) : null}
+          </DragOverlay>
         </DndContext>
       )}
 
-      {/* MODAL */}
+      {aiModalOpen && (
+        <div className="modal-backdrop">
+          <div className="modal ai-modal">
+            <div className="modal-header ai-modal-header">
+              <div>
+                <p className="ai-modal-kicker">AI milestone planner</p>
+                <h3>Create a new gig and let AI draft the milestone roadmap.</h3>
+                <p className="ai-modal-subtext">
+                  Start with the project basics, then review every milestone before saving it to
+                  your board.
+                </p>
+              </div>
+              <button className="btn-close" onClick={closeAiModal} disabled={aiStep === 'saving'}>
+                x
+              </button>
+            </div>
+
+            <div className="ai-stepper">
+              {AI_MODAL_STEPS.map((label, index) => {
+                const isActive =
+                  (aiStep === 'setup' && index === 0) ||
+                  (aiStep === 'generating' && index === 1) ||
+                  ((aiStep === 'review' || aiStep === 'saving') && index === 2);
+                const isComplete =
+                  (aiStep === 'generating' || aiStep === 'review' || aiStep === 'saving') &&
+                  index === 0
+                    ? true
+                    : (aiStep === 'review' || aiStep === 'saving') && index === 1;
+
+                return (
+                  <div
+                    key={label}
+                    className={`ai-step${isActive ? ' active' : ''}${isComplete ? ' complete' : ''}`}
+                  >
+                    <span className="ai-step-index">{index + 1}</span>
+                    <span>{label}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {aiError && <div className="txn-form-error ai-inline-error">{aiError}</div>}
+
+            {aiStep === 'setup' && (
+              <form className="txn-form" onSubmit={handleAiGenerateSubmit}>
+                <div className="txn-form-group">
+                  <label htmlFor="ai-gig-title">Gig Title</label>
+                  <input
+                    id="ai-gig-title"
+                    placeholder="Website redesign for Acme"
+                    value={aiGigForm.title}
+                    onChange={(event) =>
+                      setAiGigForm((prev) => ({ ...prev, title: event.target.value }))
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="modal-grid">
+                  <div className="txn-form-group">
+                    <label htmlFor="ai-client-name">Client Name</label>
+                    <input
+                      id="ai-client-name"
+                      placeholder="Optional client name"
+                      value={aiGigForm.clientName}
+                      onChange={(event) =>
+                        setAiGigForm((prev) => ({ ...prev, clientName: event.target.value }))
+                      }
+                    />
+                  </div>
+
+                  <div className="txn-form-group">
+                    <label htmlFor="ai-start-date">Start Date</label>
+                    <DatePicker
+                      id="ai-start-date"
+                      selected={getDatePickerValue(aiGigForm.startDate)}
+                      onChange={(date) =>
+                        setAiGigForm((prev) => ({
+                          ...prev,
+                          startDate: date ? getDateInputValue(date) : '',
+                        }))
+                      }
+                      placeholderText="Start Date"
+                      dateFormat="MMM d, yyyy"
+                      className="date-pill"
+                      calendarClassName="dark-calendar"
+                      popperClassName="calendar-popper"
+                      showPopperArrow={false}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="txn-form-group">
+                  <label htmlFor="ai-description">Gig Description</label>
+                  <textarea
+                    id="ai-description"
+                    placeholder="Describe the project scope, deliverables, deadlines, and anything else the AI should consider."
+                    value={aiGigForm.description}
+                    onChange={(event) =>
+                      setAiGigForm((prev) => ({ ...prev, description: event.target.value }))
+                    }
+                    className="ai-description-field"
+                    required
+                  />
+                </div>
+
+                <div className="ai-setup-note">
+                  The gig will be created as a draft first so the existing AI route can generate
+                  milestones from its saved description and start date.
+                </div>
+
+                <div className="modal-actions">
+                  <button type="button" className="btn-danger" onClick={closeAiModal}>
+                    Cancel
+                  </button>
+                  <button className="btn ai-confirm-button">Generate</button>
+                </div>
+              </form>
+            )}
+
+            {aiStep === 'generating' && (
+              <div className="ai-loading-state">
+                <div className="ai-loading-orb" />
+                <h4>Generating milestones...</h4>
+                <p>
+                  AI is turning your gig description into a milestone plan. This usually takes a
+                  few seconds.
+                </p>
+
+                <div className="ai-draft-summary">
+                  <div>
+                    <span className="ai-summary-label">Gig</span>
+                    <strong>{aiGigForm.title}</strong>
+                  </div>
+                  <div>
+                    <span className="ai-summary-label">Start Date</span>
+                    <strong>{aiGigForm.startDate || 'Not set'}</strong>
+                  </div>
+                  <div className="ai-summary-description">
+                    <span className="ai-summary-label">Description</span>
+                    <p>{aiGigForm.description}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {(aiStep === 'review' || aiStep === 'saving') && (
+              <div className="ai-review-layout">
+                <div className="ai-review-summary">
+                  <div>
+                    <span className="ai-summary-label">Gig</span>
+                    <strong>{aiDraftGig?.title}</strong>
+                  </div>
+                  <div>
+                    <span className="ai-summary-label">Accepted</span>
+                    <strong>{aiReviewSummary.accepted}</strong>
+                  </div>
+                  <div>
+                    <span className="ai-summary-label">Rejected</span>
+                    <strong>{aiReviewSummary.rejected}</strong>
+                  </div>
+                  <div>
+                    <span className="ai-summary-label">Pending</span>
+                    <strong>{aiReviewSummary.pending}</strong>
+                  </div>
+                </div>
+
+                <div className="ai-review-hint">
+                  Edit any milestone details you need, then accept or reject each one. Confirming
+                  will save accepted milestones only.
+                </div>
+
+                <div className="ai-milestone-grid">
+                  {aiMilestoneDrafts.map((milestone, index) => (
+                    <AiMilestoneReviewCard
+                      key={milestone.localId}
+                      index={index}
+                      milestone={milestone}
+                      onFieldChange={handleAiMilestoneFieldChange}
+                      onDecisionChange={handleAiMilestoneDecision}
+                    />
+                  ))}
+                </div>
+
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="btn-danger"
+                    onClick={closeAiModal}
+                    disabled={aiStep === 'saving'}
+                  >
+                    Discard
+                  </button>
+                  <button
+                    type="button"
+                    className="btn ai-confirm-button"
+                    onClick={handleConfirmAiMilestones}
+                    disabled={!aiCanConfirm || aiStep === 'saving'}
+                  >
+                    {aiStep === 'saving' ? 'Saving Milestones...' : 'Confirm'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {modalType && (
         <div className="modal-backdrop">
           <div className="modal">
@@ -404,224 +1252,277 @@ export default function GigBoard() {
                 {modalType === 'addMilestone' && 'Create Milestone'}
                 {modalType === 'editMilestone' && 'Edit Milestone'}
               </h3>
-              <button className="btn-close" onClick={closeModal}>✕</button>
+              <button className="btn-close" onClick={closeModal}>
+                x
+              </button>
             </div>
+            <form
+              className="txn-form"
+              onSubmit={(event) => {
+                event.preventDefault();
 
-            <form className='txn-form' onSubmit={e => {
-              e.preventDefault();
-              if (modalType === 'addGig') return handleAddGig(formData);
-              if (modalType === 'editGig') return handleUpdateGig(formData._id, formData);
-              
-              // --- VALIDATION LOGIC START ---
-              if (modalType === 'addMilestone') {
+                if (modalType === 'addGig') return handleAddGig(formData);
+                if (modalType === 'editGig') return handleUpdateGig(formData._id, formData);
+
+                if (modalType === 'addMilestone') {
                   if (Number(formData.paymentAmount) < 0) {
-                      alert("Payment amount cannot be negative.");
-                      return;
+                    alert('Payment amount cannot be negative.');
+                    return;
                   }
-                  // Date Validation
+
                   if (formData.startDate && formData.dueDate) {
-                      if (new Date(formData.dueDate) < new Date(formData.startDate)) {
-                          alert("Due Date cannot be before Start Date.");
-                          return;
-                      }
+                    if (new Date(formData.dueDate) < new Date(formData.startDate)) {
+                      alert('Due Date cannot be before Start Date.');
+                      return;
+                    }
                   }
+
                   return handleAddMilestone(formData.gigId, formData);
-              }
-              if (modalType === 'editMilestone') {
+                }
+
+                if (modalType === 'editMilestone') {
                   if (Number(formData.milestone?.paymentAmount) < 0) {
-                      alert("Payment amount cannot be negative.");
-                      return;
+                    alert('Payment amount cannot be negative.');
+                    return;
                   }
-                   // Date Validation (Nested state for edit mode)
-                  const start = formData.milestone?.startDate ? new Date(formData.milestone.startDate) : null;
-                  const end = formData.milestone?.dueDate ? new Date(formData.milestone.dueDate) : null;
-                  
+
+                  const start = formData.milestone?.startDate
+                    ? new Date(formData.milestone.startDate)
+                    : null;
+                  const end = formData.milestone?.dueDate
+                    ? new Date(formData.milestone.dueDate)
+                    : null;
+
                   if (start && end && end < start) {
-                      alert("Due Date cannot be before Start Date.");
-                      return;
+                    alert('Due Date cannot be before Start Date.');
+                    return;
                   }
 
-                  return handleUpdateMilestone(formData.gigId, formData.milestone._id, { ...formData.milestone, ...formData });
-              }
-              // --- VALIDATION LOGIC END ---
-            }}>
+                  return handleUpdateMilestone(formData.gigId, formData.milestone._id, {
+                    ...formData.milestone,
+                    ...formData,
+                  });
+                }
 
-              {/* Gig fields */}
+                return null;
+              }}
+            >
               {(modalType === 'addGig' || modalType === 'editGig') && (
                 <div className="txn-form-group">
-                  <input placeholder="Title" value={formData.title||''} onChange={e=>setFormData({...formData, title: e.target.value})} required />
-                  <textarea placeholder="Description" value={formData.description||''} onChange={e=>setFormData({...formData, description: e.target.value})} />
+                  <input
+                    placeholder="Title"
+                    value={formData.title || ''}
+                    onChange={(event) => setFormData({ ...formData, title: event.target.value })}
+                    required
+                  />
+                  <textarea
+                    placeholder="Description"
+                    value={formData.description || ''}
+                    onChange={(event) =>
+                      setFormData({ ...formData, description: event.target.value })
+                    }
+                  />
                   <div className="modal-grid">
-                    <input className="p-2 border rounded" placeholder="Client Name" value={formData.clientName||''} onChange={e=>setFormData({...formData, clientName: e.target.value})} />
-                    <select className="p-2 border rounded" value={formData.status||'Open'} onChange={e=>setFormData({...formData, status: e.target.value})}>
-                      <option>Open</option>
-                      <option>In Progress</option>
-                      <option>Completed</option>
-                      <option>Archived</option>
+                    <input
+                      className="p-2 border rounded"
+                      placeholder="Client Name"
+                      value={formData.clientName || ''}
+                      onChange={(event) =>
+                        setFormData({ ...formData, clientName: event.target.value })
+                      }
+                    />
+                    <select
+                      className="p-2 border rounded"
+                      value={formData.status || 'Open'}
+                      onChange={(event) => setFormData({ ...formData, status: event.target.value })}
+                    >
+                      {GIG_STATUS_OPTIONS.map((status) => (
+                        <option key={status}>{status}</option>
+                      ))}
                     </select>
                     <DatePicker
-                        selected={
-                            modalType === "addGig"
-                            ? formData.startDate
-                                ? new Date(formData.startDate)
-                                : null
-                            : formData.dueDate
-                            ? new Date(formData.dueDate)
-                            : null
-                        }
-                        onChange={(date) => {
-                            const v = date ? date.toISOString().split("T")[0] : "";
-                            setFormData({
-                                ...formData,
-                                startDate: v,
-                            });                           
-                        }}
-                        placeholderText="Start Date"
-                        dateFormat="MMM d, yyyy"
-                        className="date-pill"
-                        calendarClassName="dark-calendar"
-                        popperClassName="calendar-popper"
-                        showPopperArrow={false}
+                      selected={getDatePickerValue(formData.startDate)}
+                      onChange={(date) =>
+                        setFormData({
+                          ...formData,
+                          startDate: date ? getDateInputValue(date) : '',
+                        })
+                      }
+                      placeholderText="Start Date"
+                      dateFormat="MMM d, yyyy"
+                      className="date-pill"
+                      calendarClassName="dark-calendar"
+                      popperClassName="calendar-popper"
+                      showPopperArrow={false}
                     />
                   </div>
                 </div>
               )}
 
-              {/* Milestone fields */}
               {(modalType === 'addMilestone' || modalType === 'editMilestone') && (
                 <div className="txn-form-group">
-                  <input className="w-full p-2 border rounded" placeholder="Title" value={(modalType==='editMilestone' ? (formData.milestone?.title) : formData.title) || ''} onChange={e=>{
-                    if (modalType==='editMilestone') setFormData({...formData, milestone: {...formData.milestone, title: e.target.value}});
-                    else setFormData({...formData, title: e.target.value});
-                  }} required />
-                  <textarea className="w-full p-2 border rounded" placeholder="Description" value={(modalType==='editMilestone' ? (formData.milestone?.description) : formData.description) || ''} onChange={e=>{
-                    if (modalType==='editMilestone') setFormData({...formData, milestone: {...formData.milestone, description: e.target.value}});
-                    else setFormData({...formData, description: e.target.value});
-                  }} />
+                  <input
+                    className="w-full p-2 border rounded"
+                    placeholder="Title"
+                    value={
+                      (modalType === 'editMilestone'
+                        ? formData.milestone?.title
+                        : formData.title) || ''
+                    }
+                    onChange={(event) => {
+                      if (modalType === 'editMilestone') {
+                        setFormData({
+                          ...formData,
+                          milestone: { ...formData.milestone, title: event.target.value },
+                        });
+                      } else {
+                        setFormData({ ...formData, title: event.target.value });
+                      }
+                    }}
+                    required
+                  />
+                  <textarea
+                    className="w-full p-2 border rounded"
+                    placeholder="Description"
+                    value={
+                      (modalType === 'editMilestone'
+                        ? formData.milestone?.description
+                        : formData.description) || ''
+                    }
+                    onChange={(event) => {
+                      if (modalType === 'editMilestone') {
+                        setFormData({
+                          ...formData,
+                          milestone: {
+                            ...formData.milestone,
+                            description: event.target.value,
+                          },
+                        });
+                      } else {
+                        setFormData({ ...formData, description: event.target.value });
+                      }
+                    }}
+                  />
 
                   <div className="modal-grid">
-                    <input 
-                      className="p-2 border rounded" 
-                      placeholder="Payment Amount" 
-                      type="number" 
+                    <input
+                      className="p-2 border rounded"
+                      placeholder="Payment Amount"
+                      type="number"
                       min="0"
-                      value={(modalType==='editMilestone' ? (formData.milestone?.paymentAmount) : formData.paymentAmount) } 
-                      onChange={e=>{
-                        const val = Number(e.target.value);
-                        if (modalType==='editMilestone') setFormData({...formData, milestone: {...formData.milestone, paymentAmount: val}});
-                        else setFormData({...formData, paymentAmount: val});
-                    }} />
-
-                    <select className="p-2 border rounded" value={(modalType==='editMilestone' ? (formData.milestone?.status) : formData.status) || 'To Do'} onChange={e=>{
-                      if (modalType==='editMilestone') setFormData({...formData, milestone: {...formData.milestone, status: e.target.value}});
-                      else setFormData({...formData, status: e.target.value});
-                    }}>
-                      <option>To Do</option>
-                      <option>In Progress</option>
-                      <option>Blocked</option>
-                      <option>Done</option>
-                    </select>
-                    
-                    {/* START DATE PICKER */}
-                    <DatePicker
-                        selected={
-                            modalType === "editMilestone"
-                            ? formData.milestone?.startDate
-                                ? new Date(formData.milestone.startDate)
-                                : null
-                            : formData.startDate
-                            ? new Date(formData.startDate)
-                            : null
+                      value={
+                        modalType === 'editMilestone'
+                          ? formData.milestone?.paymentAmount
+                          : formData.paymentAmount
+                      }
+                      onChange={(event) => {
+                        const value = event.target.value === '' ? '' : Number(event.target.value);
+                        if (modalType === 'editMilestone') {
+                          setFormData({
+                            ...formData,
+                            milestone: {
+                              ...formData.milestone,
+                              paymentAmount: value,
+                            },
+                          });
+                        } else {
+                          setFormData({ ...formData, paymentAmount: value });
                         }
-                        // Added maxDate so you can't pick a start date after the current due date
-                        maxDate={
-                             modalType === "editMilestone"
-                            ? formData.milestone?.dueDate
-                                ? new Date(formData.milestone.dueDate)
-                                : null
-                            : formData.dueDate
-                            ? new Date(formData.dueDate)
-                            : null
-                        }
-                        onChange={(date) => {
-                            const v = date ? date.toISOString().split("T")[0] : "";
-
-                            if (modalType === "editMilestone") {
-                            setFormData({
-                                ...formData,
-                                milestone: {
-                                ...formData.milestone,
-                                startDate: v,
-                                },
-                            });
-                            } else {
-                            setFormData({
-                                ...formData,
-                                startDate: v,
-                            });
-                            }
-                        }}
-                        placeholderText="Start Date"
-                        dateFormat="MMM d, yyyy"
-                        className="date-pill"
-                        calendarClassName="dark-calendar"
-                        popperClassName="calendar-popper"
-                        showPopperArrow={false}
+                      }}
                     />
 
-                    {/* DUE DATE PICKER */}
+                    <select
+                      className="p-2 border rounded"
+                      value={
+                        (modalType === 'editMilestone'
+                          ? formData.milestone?.status
+                          : formData.status) || 'To Do'
+                      }
+                      onChange={(event) => {
+                        if (modalType === 'editMilestone') {
+                          setFormData({
+                            ...formData,
+                            milestone: { ...formData.milestone, status: event.target.value },
+                          });
+                        } else {
+                          setFormData({ ...formData, status: event.target.value });
+                        }
+                      }}
+                    >
+                      {MILESTONE_STATUS_OPTIONS.map((status) => (
+                        <option key={status}>{status}</option>
+                      ))}
+                    </select>
+
                     <DatePicker
-                        selected={
-                            modalType === "editMilestone"
-                            ? formData.milestone?.dueDate
-                                ? new Date(formData.milestone.dueDate)
-                                : null
-                            : formData.dueDate
-                            ? new Date(formData.dueDate)
-                            : null
-                        }
-                        // Added minDate so you can't pick a due date before the start date
-                        minDate={
-                             modalType === "editMilestone"
-                            ? formData.milestone?.startDate
-                                ? new Date(formData.milestone.startDate)
-                                : null
-                            : formData.startDate
-                            ? new Date(formData.startDate)
-                            : null
-                        }
-                        onChange={(date) => {
-                            const v = date ? date.toISOString().split("T")[0] : "";
+                      selected={
+                        modalType === 'editMilestone'
+                          ? getDatePickerValue(formData.milestone?.startDate)
+                          : getDatePickerValue(formData.startDate)
+                      }
+                      maxDate={
+                        modalType === 'editMilestone'
+                          ? getDatePickerValue(formData.milestone?.dueDate)
+                          : getDatePickerValue(formData.dueDate)
+                      }
+                      onChange={(date) => {
+                        const value = date ? getDateInputValue(date) : '';
 
-                            if (modalType === "editMilestone") {
-                            setFormData({
-                                ...formData,
-                                milestone: {
-                                ...formData.milestone,
-                                dueDate: v,
-                                },
-                            });
-                            } else {
-                            setFormData({
-                                ...formData,
-                                dueDate: v,
-                            });
-                            }
-                        }}
-                        placeholderText="Due Date"
-                        dateFormat="MMM d, yyyy"
-                        className="date-pill"
-                        calendarClassName="dark-calendar"
-                        popperClassName="calendar-popper"
-                        showPopperArrow={false}
-                        />
+                        if (modalType === 'editMilestone') {
+                          setFormData({
+                            ...formData,
+                            milestone: { ...formData.milestone, startDate: value },
+                          });
+                        } else {
+                          setFormData({ ...formData, startDate: value });
+                        }
+                      }}
+                      placeholderText="Start Date"
+                      dateFormat="MMM d, yyyy"
+                      className="date-pill"
+                      calendarClassName="dark-calendar"
+                      popperClassName="calendar-popper"
+                      showPopperArrow={false}
+                    />
+
+                    <DatePicker
+                      selected={
+                        modalType === 'editMilestone'
+                          ? getDatePickerValue(formData.milestone?.dueDate)
+                          : getDatePickerValue(formData.dueDate)
+                      }
+                      minDate={
+                        modalType === 'editMilestone'
+                          ? getDatePickerValue(formData.milestone?.startDate)
+                          : getDatePickerValue(formData.startDate)
+                      }
+                      onChange={(date) => {
+                        const value = date ? getDateInputValue(date) : '';
+
+                        if (modalType === 'editMilestone') {
+                          setFormData({
+                            ...formData,
+                            milestone: { ...formData.milestone, dueDate: value },
+                          });
+                        } else {
+                          setFormData({ ...formData, dueDate: value });
+                        }
+                      }}
+                      placeholderText="Due Date"
+                      dateFormat="MMM d, yyyy"
+                      className="date-pill"
+                      calendarClassName="dark-calendar"
+                      popperClassName="calendar-popper"
+                      showPopperArrow={false}
+                    />
                   </div>
-
                 </div>
               )}
 
               <div className="modal-actions">
-                <button type="button" className="btn-danger" onClick={closeModal}>Cancel</button>
+                <button type="button" className="btn-danger" onClick={closeModal}>
+                  Cancel
+                </button>
                 <button className="btn">Save</button>
               </div>
             </form>
@@ -629,7 +1530,6 @@ export default function GigBoard() {
         </div>
       )}
 
-      {/* INVOICE PROMPT */}
       {invoicePrompt.open && (
         <div className="modal-backdrop">
           <div className="modal">
@@ -644,8 +1544,8 @@ export default function GigBoard() {
               placeholder="Client Name*"
               value={invoicePrompt.clientName}
               className="invoice-prompt-text"
-              onChange={(e) =>
-                setInvoicePrompt((prev) => ({ ...prev, clientName: e.target.value }))
+              onChange={(event) =>
+                setInvoicePrompt((prev) => ({ ...prev, clientName: event.target.value }))
               }
               style={{ marginBottom: '0.5rem', width: '100%', padding: '0.5rem' }}
             />
@@ -655,8 +1555,8 @@ export default function GigBoard() {
               placeholder="Freelancer Name*"
               value={invoicePrompt.freelancerName}
               className="invoice-prompt-text"
-              onChange={(e) =>
-                setInvoicePrompt((prev) => ({ ...prev, freelancerName: e.target.value }))
+              onChange={(event) =>
+                setInvoicePrompt((prev) => ({ ...prev, freelancerName: event.target.value }))
               }
               style={{ marginBottom: '1rem', width: '100%', padding: '0.5rem' }}
             />
@@ -665,7 +1565,12 @@ export default function GigBoard() {
               <button
                 className="btn-danger"
                 onClick={() =>
-                  setInvoicePrompt({ open: false, milestoneId: null, clientName: '', freelancerName: '' })
+                  setInvoicePrompt({
+                    open: false,
+                    milestoneId: null,
+                    clientName: '',
+                    freelancerName: '',
+                  })
                 }
               >
                 Not Now
@@ -679,7 +1584,12 @@ export default function GigBoard() {
                     invoicePrompt.clientName,
                     invoicePrompt.freelancerName
                   );
-                  setInvoicePrompt({ open: false, milestoneId: null, clientName: null, freelancerName: null });
+                  setInvoicePrompt({
+                    open: false,
+                    milestoneId: null,
+                    clientName: '',
+                    freelancerName: '',
+                  });
                 }}
               >
                 Generate Invoice
@@ -688,50 +1598,6 @@ export default function GigBoard() {
           </div>
         </div>
       )}
-
-    </div>
-  );
-}
-
-function DraggableGig({ gig, children }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id: gig._id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-    >
-      {children}
-    </div>
-  );
-}
-
-function DroppableColumn({ id, children }) {
-  const { setNodeRef, isOver } = useDroppable({ id });
-
-  return (
-    <div
-      ref={setNodeRef}
-      className="board-column"
-      style={{
-        outline: isOver ? "2px dashed #4CAF50" : "none",
-        outlineOffset: "4px",
-      }}
-    >
-      {children}
     </div>
   );
 }
