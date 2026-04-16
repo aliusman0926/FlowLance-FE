@@ -31,8 +31,7 @@ const AnalyticsDashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [hasResume, setHasResume] = useState(false);
-  const [resumeLoading, setResumeLoading] = useState(true);
+  const [hasResume, setHasResume] = useState(null);
   const [resumeError, setResumeError] = useState(null);
   const hasFetched = useRef(false);
 
@@ -43,7 +42,6 @@ const AnalyticsDashboard = () => {
 
   useEffect(() => {
     const checkResumeStatus = async () => {
-      setResumeLoading(true);
       setResumeError(null);
 
       try {
@@ -54,8 +52,6 @@ const AnalyticsDashboard = () => {
         console.error('Failed to verify resume status', err);
         setResumeError('Unable to verify resume upload. Please refresh the page or use Settings to add a resume.');
         setHasResume(false);
-      } finally {
-        setResumeLoading(false);
       }
     };
 
@@ -63,7 +59,7 @@ const AnalyticsDashboard = () => {
   }, []);
 
   useEffect(() => {
-    if (resumeLoading || !hasResume || hasFetched.current) return;
+    if (hasResume !== true || hasFetched.current) return;
     hasFetched.current = true;
 
     axios.get('http://localhost:3000/api/analytics/insights')
@@ -79,7 +75,7 @@ const AnalyticsDashboard = () => {
         setError(err.response?.data?.error || err.message || "Failed to load AI Analytics. Please try again.");
         setLoading(false);
       });
-  }, [resumeLoading, hasResume]);
+  }, [hasResume]);
 
   const personalData = useMemo(() => {
     if (!data) return null;
@@ -130,9 +126,9 @@ const AnalyticsDashboard = () => {
     return count.toString();
   };
 
-  if (resumeLoading) return <DashboardSkeleton />;
+  if (hasResume === null) return null;
 
-  if (!hasResume) {
+  if (hasResume === false) {
     return (
       <div className="analytics-container analytics-lock-shell">
         <div className="analytics-lock-screen">
@@ -141,7 +137,7 @@ const AnalyticsDashboard = () => {
             <h2>Resume required for AI analytics</h2>
             <p>{resumeError || 'Upload at least one resume to enable personalised analytics and tailored insights.'}</p>
             <button className="unlock-btn" onClick={() => navigate('/settings')}>
-              Got to Settings
+              Go to Settings
             </button>
           </div>
         </div>

@@ -18,8 +18,7 @@ const ProposalAgent = () => {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   }), [token]);
 
-  const [hasResume, setHasResume] = useState(false);
-  const [resumeLoading, setResumeLoading] = useState(true);
+  const [hasResume, setHasResume] = useState(null);
   const [resumeError, setResumeError] = useState(null);
 
   // History State
@@ -54,7 +53,6 @@ const ProposalAgent = () => {
   }, []);
 
   const checkResumeStatus = async () => {
-    setResumeLoading(true);
     setResumeError(null);
 
     try {
@@ -65,8 +63,6 @@ const ProposalAgent = () => {
       console.error('Failed to verify resume status', err);
       setResumeError('Unable to verify resume upload. Please add a resume in Settings to continue.');
       setHasResume(false);
-    } finally {
-      setResumeLoading(false);
     }
   };
 
@@ -228,21 +224,9 @@ const ProposalAgent = () => {
   };
 
   const isBusy = isLoading || isSaving;
-  const isLocked = !resumeLoading && !hasResume;
+  const isLocked = hasResume === false;
 
-  if (resumeLoading) {
-    return (
-      <div className="proposal-dashboard loading-state" style={{ minHeight: 'calc(100vh - 120px)' }}>
-        <div className="ai-loading-content">
-          <div className="scanner-ring">
-            <BrainCircuit size={40} className="pulse-icon" />
-          </div>
-          <h2 className="loading-title">Checking AI resume access</h2>
-          <p className="loading-subtitle">Verifying a stored resume so intelligent proposal generation can run.</p>
-        </div>
-      </div>
-    );
-  }
+  if (hasResume === null) return null;
 
   return (
     <div className={`proposal-dashboard${isLocked ? ' locked-page' : ''}`}>
