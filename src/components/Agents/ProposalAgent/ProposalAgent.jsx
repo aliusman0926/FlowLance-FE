@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { BrainCircuit, Lock } from 'lucide-react';
 import * as Diff from 'diff'; 
 import './ProposalAgent.css';
 
@@ -10,10 +12,15 @@ function BentoBox({ children, className = '' }) {
 }
 
 const ProposalAgent = () => {
+  const navigate = useNavigate();
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const headers = useMemo(() => ({
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   }), [token]);
+
+  const [hasResume, setHasResume] = useState(false);
+  const [resumeLoading, setResumeLoading] = useState(true);
+  const [resumeError, setResumeError] = useState(null);
 
   // History State
   const [history, setHistory] = useState([]);
@@ -42,8 +49,26 @@ const ProposalAgent = () => {
   const [errorMessage, setErrorMessage] = useState(''); // 🚀 NEW: Error state
 
   useEffect(() => {
+    checkResumeStatus();
     fetchHistory();
   }, []);
+
+  const checkResumeStatus = async () => {
+    setResumeLoading(true);
+    setResumeError(null);
+
+    try {
+      const response = await axios.get('/api/resume', { headers });
+      const resumes = response.data?.resumes || [];
+      setHasResume(resumes.length > 0);
+    } catch (err) {
+      console.error('Failed to verify resume status', err);
+      setResumeError('Unable to verify resume upload. Please add a resume in Settings to continue.');
+      setHasResume(false);
+    } finally {
+      setResumeLoading(false);
+    }
+  };
 
   const fetchHistory = async () => {
     try {
@@ -203,9 +228,24 @@ const ProposalAgent = () => {
   };
 
   const isBusy = isLoading || isSaving;
+  const isLocked = !resumeLoading && !hasResume;
+
+  if (resumeLoading) {
+    return (
+      <div className="proposal-dashboard loading-state" style={{ minHeight: 'calc(100vh - 120px)' }}>
+        <div className="ai-loading-content">
+          <div className="scanner-ring">
+            <BrainCircuit size={40} className="pulse-icon" />
+          </div>
+          <h2 className="loading-title">Checking AI resume access</h2>
+          <p className="loading-subtitle">Verifying a stored resume so intelligent proposal generation can run.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="proposal-dashboard">
+    <div className={`proposal-dashboard${isLocked ? ' locked-page' : ''}`}>
       <div className="dashboard-hero">
         <div>
           <h1>AI Proposal Writer</h1>
@@ -431,6 +471,19 @@ const ProposalAgent = () => {
           )}
         </BentoBox>
       </div>
+
+      {isLocked && (
+        <div className="proposal-lock-overlay">
+          <div className="lock-card">
+            <div className="lock-card-icon"><Lock size={34} /></div>
+            <h2>Resume required for AI proposals</h2>
+            <p>Upload at least one resume in Settings to unlock personalized proposal drafting.</p>
+            <button className="unlock-btn" onClick={() => navigate('/settings')}>
+              Go to Settings
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

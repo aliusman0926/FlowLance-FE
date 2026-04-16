@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -7,9 +8,9 @@ import {
   PieChart, Pie, Cell, ComposedChart, Bar, Line
 } from 'recharts';
 import { 
-  BrainCircuit, TrendingUp, Target, Briefcase, 
+  Lock, TrendingUp, Target, Briefcase, 
   DollarSign, CheckCircle2, CircleDashed, FileCheck, Zap,
-  Compass, BookOpen
+  Compass, BookOpen, BrainCircuit
 } from 'lucide-react';
 import './AnalyticsDashboard.css';
 
@@ -26,27 +27,59 @@ const DashboardSkeleton = () => (
 );
 
 const AnalyticsDashboard = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [hasResume, setHasResume] = useState(false);
+  const [resumeLoading, setResumeLoading] = useState(true);
+  const [resumeError, setResumeError] = useState(null);
   const hasFetched = useRef(false);
 
+  const getAuthHeaders = () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   useEffect(() => {
-    if (hasFetched.current) return;
+    const checkResumeStatus = async () => {
+      setResumeLoading(true);
+      setResumeError(null);
+
+      try {
+        const response = await axios.get('/api/resume', { headers: getAuthHeaders() });
+        const resumes = response.data?.resumes || [];
+        setHasResume(resumes.length > 0);
+      } catch (err) {
+        console.error('Failed to verify resume status', err);
+        setResumeError('Unable to verify resume upload. Please refresh the page or use Settings to add a resume.');
+        setHasResume(false);
+      } finally {
+        setResumeLoading(false);
+      }
+    };
+
+    checkResumeStatus();
+  }, []);
+
+  useEffect(() => {
+    if (resumeLoading || !hasResume || hasFetched.current) return;
     hasFetched.current = true;
 
     axios.get('http://localhost:3000/api/analytics/insights')
       .then(res => {
+        if (!res.data?.data) {
+          throw new Error('No analytics payload returned.');
+        }
         setData(res.data.data);
         setLoading(false);
       })
       .catch(err => {
         console.error("Failed to fetch analytics", err);
-        // 🚀 Extract the clean error from Node.js fallback
-        setError(err.response?.data?.error || "Failed to load AI Analytics. Please try again.");
+        setError(err.response?.data?.error || err.message || "Failed to load AI Analytics. Please try again.");
         setLoading(false);
       });
-  }, []);
+  }, [resumeLoading, hasResume]);
 
   const personalData = useMemo(() => {
     if (!data) return null;
@@ -96,6 +129,25 @@ const AnalyticsDashboard = () => {
     if (count >= 100) return `${(Math.floor(count / 100) * 100).toLocaleString()}+`;
     return count.toString();
   };
+
+  if (resumeLoading) return <DashboardSkeleton />;
+
+  if (!hasResume) {
+    return (
+      <div className="analytics-container analytics-lock-shell">
+        <div className="analytics-lock-screen">
+          <div className="lock-card lock-card-large">
+            <div className="lock-card-icon"><Lock size={40} /></div>
+            <h2>Resume required for AI analytics</h2>
+            <p>{resumeError || 'Upload at least one resume to enable personalised analytics and tailored insights.'}</p>
+            <button className="unlock-btn" onClick={() => navigate('/settings')}>
+              Got to Settings
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) return <DashboardSkeleton />;
   
