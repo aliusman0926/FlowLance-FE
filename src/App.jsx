@@ -21,6 +21,7 @@ import SettingsPage from './components/SettingsPage';
 // Agents Imports
 import ProposalAgent from './components/Agents/ProposalAgent/ProposalAgent';
 import AnalyticsDashboard from './components/Agents/Analytics/AnalyticsDashboard';
+import MessagingAgent from './components/Agents/MessagingAgent/MessagingAgent';
 import ResumeOptimizer from './components/Agents/ResumeOptimizer/ResumeOptimizer';
 
 // Import Global CSS
@@ -108,6 +109,7 @@ const items = [
       textColor: "var(--accent-contrast)",
       links: [
         { label: "Proposal Writer Agent", href: '/agents/proposal' },
+        { label: "Messages", href: '/agents/messaging' },
         { label: "AI Analytics", href: '/ai-analytics' }
       ]
     }
@@ -383,6 +385,10 @@ function App() {
         <Route 
           path="/agents/proposal" 
           element={<ProposalAgent />} 
+        />
+        <Route 
+          path="/agents/messaging" 
+          element={<MessagingAgent />} 
         />
         <Route
           path="/agents/resume-optimizer"
