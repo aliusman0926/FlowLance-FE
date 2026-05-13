@@ -21,6 +21,7 @@ import SettingsPage from './components/SettingsPage';
 // Agents Imports
 import ProposalAgent from './components/Agents/ProposalAgent/ProposalAgent';
 import AnalyticsDashboard from './components/Agents/Analytics/AnalyticsDashboard';
+import ResumeOptimizer from './components/Agents/ResumeOptimizer/ResumeOptimizer';
 
 // Import Global CSS
 import './Global.css';
@@ -383,9 +384,13 @@ function App() {
           path="/agents/proposal" 
           element={<ProposalAgent />} 
         />
-        <Route 
-          path="/ai-analytics" 
-          element={<AnalyticsDashboard />} 
+        <Route
+          path="/agents/resume-optimizer"
+          element={<ResumeOptimizer />}
+        />
+        <Route
+          path="/ai-analytics"
+          element={<AnalyticsDashboard />}
         />
         <Route
           path="/settings"

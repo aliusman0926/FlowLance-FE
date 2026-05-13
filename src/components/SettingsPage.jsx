@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   TbArrowUpRight,
@@ -8,6 +9,7 @@ import {
   TbLink,
   TbLoader2,
   TbLogout,
+  TbSparkles,
   TbTrash,
   TbUser,
 } from 'react-icons/tb';
@@ -53,6 +55,7 @@ const getAuthHeaders = () => {
 };
 
 function SettingsPage({ user, onUserUpdate, onLogout }) {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('profile');
   const [username, setUsername] = useState(user?.username || '');
   const [profileFeedback, setProfileFeedback] = useState({ type: '', message: '' });
@@ -399,6 +402,14 @@ function SettingsPage({ user, onUserUpdate, onLogout }) {
                     <p className="settings-panel-kicker">Stored Files</p>
                     <h3>Active Resumes ({resumes.length})</h3>
                   </div>
+                  <button
+                    type="button"
+                    className="settings-ai-button"
+                    onClick={() => navigate('/agents/resume-optimizer')}
+                  >
+                    <TbSparkles aria-hidden="true" />
+                    Optimise with AI
+                  </button>
                 </div>
 
                 {isLoadingResumes ? (

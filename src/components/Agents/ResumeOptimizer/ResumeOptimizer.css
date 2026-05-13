@@ -1,0 +1,536 @@
+/* ═══════════════════════════════════════
+   ResumeOptimizer — scoped under .ro-*
+   ═══════════════════════════════════════ */
+
+.ro-page {
+    padding: 3rem 1.5rem 2rem;
+    width: 100%;
+    position: relative;
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────────────── */
+
+.ro-hero {
+    margin-bottom: 2rem;
+}
+
+.ro-hero h1 {
+    font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.ro-subtext {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-top: 0.25rem;
+}
+
+/* ── Grid ────────────────────────────────────────────────────────────────── */
+
+.ro-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 1.5rem;
+    min-height: calc(100vh - 200px);
+}
+
+/* ── Bento card ──────────────────────────────────────────────────────────── */
+
+.ro-bento {
+    background-color: var(--card-color);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.25rem;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+
+.ro-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.ro-sidebar-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.ro-resume-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    flex-grow: 1;
+}
+
+.ro-resume-row {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: var(--surface-subtle);
+    transition: all 0.2s;
+}
+
+.ro-resume-row:hover {
+    background: var(--panel-hover);
+    border-color: var(--border-color);
+}
+
+.ro-resume-row--active {
+    border-color: var(--accent-color);
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.ro-resume-select {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex: 1;
+    padding: 0.65rem 0.75rem;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    text-align: left;
+    cursor: pointer;
+    min-width: 0;
+}
+
+.ro-resume-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ro-resume-icon { flex-shrink: 0; color: var(--text-secondary); }
+.ro-resume-row--active .ro-resume-icon { color: var(--accent-color); }
+
+.ro-view-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    margin-right: 0.3rem;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+}
+
+.ro-view-btn:hover:not(:disabled) {
+    color: var(--accent-color);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.ro-view-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.ro-resume-name {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ro-resume-chevron { flex-shrink: 0; color: var(--accent-color); }
+
+.ro-empty-hint {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    flex-grow: 1;
+}
+
+/* ── Optimise button ─────────────────────────────────────────────────────── */
+
+.ro-optimize-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: var(--accent-color);
+    color: var(--accent-contrast);
+    border: none;
+    border-radius: 8px;
+    padding: 0.85rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: auto;
+}
+
+.ro-optimize-btn:hover:not(:disabled) { opacity: 0.9; }
+.ro-optimize-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Spinner ─────────────────────────────────────────────────────────────── */
+
+.ro-spinner {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: ro-spin 0.8s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes ro-spin { to { transform: rotate(360deg); } }
+
+/* ── Workspace ───────────────────────────────────────────────────────────── */
+
+.ro-workspace {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 1.5rem 2rem;
+}
+
+/* ── Error banner ────────────────────────────────────────────────────────── */
+
+.ro-error-banner {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+/* ── Placeholder ─────────────────────────────────────────────────────────── */
+
+.ro-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    height: 100%;
+    min-height: 300px;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 2rem;
+}
+
+.ro-placeholder-icon { color: var(--accent-color); opacity: 0.5; }
+
+.ro-placeholder p {
+    font-size: 1rem;
+    max-width: 400px;
+    line-height: 1.6;
+}
+
+/* ── Loading ─────────────────────────────────────────────────────────────── */
+
+.ro-loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    height: 100%;
+    min-height: 300px;
+}
+
+.ro-loading-spinner {
+    width: 34px;
+    height: 34px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: ro-spin 1s linear infinite;
+}
+
+.ro-loading-note { font-size: 0.8rem; color: var(--text-secondary); }
+
+/* ── Critique report ─────────────────────────────────────────────────────── */
+
+.ro-critique {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    overflow-y: auto;
+    height: 100%;
+}
+
+/* Meta strip */
+.ro-critique-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.ro-meta-filename {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ro-meta-counts { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.ro-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+}
+
+.ro-meta-pill--good {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
+
+.ro-meta-pill--warn {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+}
+
+/* Overall assessment */
+.ro-overall {
+    background: var(--surface-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem;
+}
+
+.ro-overall-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--accent-color);
+    margin: 0 0 0.5rem;
+}
+
+.ro-overall-text {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Section cards */
+.ro-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.ro-card {
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    border-left-width: 3px;
+    padding: 1rem 1.25rem;
+    background: var(--card-color);
+}
+
+.ro-card--good { border-left-color: #10b981; }
+.ro-card--warn { border-left-color: #f59e0b; }
+
+.ro-card-hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.ro-card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Status badge */
+.ro-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.22rem 0.65rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.ro-badge--good {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
+
+.ro-badge--warn {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+}
+
+.ro-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* What's working sub-section */
+.ro-highlights {
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.18);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+}
+
+.ro-highlights-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Suggestions sub-section */
+.ro-improvements {
+    background: rgba(245, 158, 11, 0.06);
+    border: 1px solid rgba(245, 158, 11, 0.18);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+}
+
+/* Sub-section label */
+.ro-sub-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #10b981;
+    margin: 0 0 0.5rem;
+}
+
+.ro-sub-label--warn { color: #f59e0b; }
+
+/* Suggestions list */
+.ro-suggestions {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.ro-suggestion {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: var(--text-primary);
+}
+
+.ro-suggestion::before {
+    content: '→';
+    flex-shrink: 0;
+    color: #f59e0b;
+    font-weight: 700;
+    margin-top: 0.05rem;
+}
+
+/* ── Lock overlay ────────────────────────────────────────────────────────── */
+
+.ro-locked { position: relative; }
+
+.ro-locked .ro-grid,
+.ro-locked .ro-hero {
+    filter: blur(10px);
+    user-select: none;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.ro-lock-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    pointer-events: auto;
+}
+
+.ro-lock-card {
+    max-width: 480px;
+    width: 100%;
+    padding: 2rem;
+    border-radius: 22px;
+    background: #050b0d;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
+    text-align: center;
+    color: var(--text-color);
+}
+
+.ro-lock-icon {
+    display: inline-flex;
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+}
+
+.ro-lock-card h2 { margin: 0 0 0.8rem; font-size: 1.5rem; }
+
+.ro-lock-card p {
+    margin: 0 0 1.5rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.ro-unlock-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 0.9rem 1.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.ro-unlock-btn:hover { transform: translateY(-1px); opacity: 0.95; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+    .ro-grid {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    .ro-page { padding: 1.5rem 1rem; }
+    .ro-workspace { padding: 1.25rem; }
+}

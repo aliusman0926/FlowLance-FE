@@ -619,3 +619,24 @@
     justify-content: flex-end;
   }
 }
+
+.settings-ai-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.55rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(74, 144, 226, 0.24);
+  background:
+    linear-gradient(135deg, rgba(12, 138, 72, 0.18), rgba(74, 144, 226, 0.14)),
+    var(--surface-subtle);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.settings-ai-button:hover {
+  border-color: rgba(74, 144, 226, 0.38);
+}
