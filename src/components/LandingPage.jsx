@@ -182,8 +182,8 @@ function LandingPage({ isAuthenticated, theme, onToggleTheme }) {
               </p>
               <h1>
                 A simpler way to run <span className="landing-text-accent">money</span>,{' '}
-                <span className="landing-text-soft">projects</span>, and{' '}
-                <span className="landing-text-italic">AI support</span>.
+                <span className="landing-text-soft">and projects</span>, with a{' '}
+                <span className="landing-text-italic">Multi-Agentic Environment</span>.
               </h1>
               <p className="landing-lead">
                 FlowLance turns scattered freelance operations into one polished workspace with more motion, less
