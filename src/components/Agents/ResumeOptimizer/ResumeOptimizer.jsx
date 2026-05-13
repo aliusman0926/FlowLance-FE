@@ -21,6 +21,14 @@ function StatusBadge({ status }) {
     );
 }
 
+const toTitleCase = (str) => {
+    return str
+        .toLowerCase()
+        .split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+};
+
 const ResumeOptimizer = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
@@ -215,7 +223,7 @@ const ResumeOptimizer = () => {
                                             className={`ro-card ro-card--${section.status === 'good' ? 'good' : 'warn'}`}
                                         >
                                             <div className="ro-card-hd">
-                                                <span className="ro-card-title">{section.name}</span>
+                                                <span className="ro-card-title">{toTitleCase(section.name)}</span>
                                                 <StatusBadge status={section.status} />
                                             </div>
 
